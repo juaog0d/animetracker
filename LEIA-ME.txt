@@ -1,0 +1,58 @@
+# Anime Tracker — Como usar
+
+## Primeira vez (só uma vez)
+
+### 1. Instalar o Python
+- Acesse: https://www.python.org/downloads/
+- Clique em "Download Python" (botão amarelo grande)
+- Na instalação, MARQUE a opção "Add Python to PATH"
+- Clique em Install Now e aguarde
+
+### 2. Colocar os arquivos na pasta do projeto
+Certifique-se que a pasta do seu repositório tem:
+- index.html
+- animes.json
+- iniciar.pyw   ← novo arquivo
+
+---
+
+## Todo dia (uso normal)
+
+### Para abrir o site:
+1. Dê duplo clique em "iniciar.pyw"
+   - O site abre sozinho no navegador
+   - Um ícone aparece na bandeja do sistema (pode ignorar)
+
+### Primeira vez que abrir:
+- Um popup vai pedir a pasta de Downloads
+- Abra o Explorador de Arquivos, clique em Downloads
+- Copie o caminho da barra de endereços (ex: C:\Users\juaog0d\Downloads)
+- Cole no campo e clique em Salvar
+- Isso é salvo e nunca mais precisa repetir
+
+### Para enviar atualizações (você, dono do repositório):
+1. Edite os animes normalmente
+2. Clique em "↑ Enviar" na barra do site
+3. Pronto — o site exporta o JSON, move para a pasta certa e faz o git push automaticamente
+
+### Para receber atualizações (GabCaldeira):
+1. Dê duplo clique em "iniciar.pyw"
+2. Clique em "↓ Atualizar" na barra do site
+3. Pronto — faz git pull e recarrega os dados
+
+---
+
+## Se o botão aparecer cinza (servidor offline)
+Significa que o iniciar.pyw não está rodando.
+Solução: dê duplo clique no iniciar.pyw e recarregue a página.
+
+---
+
+## Estrutura da pasta
+```
+animetracker/
+├── index.html      ← o site
+├── animes.json     ← banco de dados
+├── iniciar.pyw     ← abre o site e ativa os botões
+└── config.json     ← criado automaticamente, salva suas preferências
+```
