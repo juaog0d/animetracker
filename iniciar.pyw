@@ -70,20 +70,32 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self.send_json(404, {"erro": "arquivo nao encontrado"})
 
     def do_GET(self):
-        if self.path == "/ping":
+        # Remove query string se houver
+        path = self.path.split("?")[0].split("#")[0]
+
+        if path == "/ping":
             self.send_json(200, {"ok": True})
 
-        elif self.path == "/config":
+        elif path == "/config":
             self.send_json(200, load_config())
 
-        elif self.path in ("/", "/index.html"):
+        elif path in ("/", "/index.html", ""):
             self.send_file(BASE_DIR / "index.html", "text/html; charset=utf-8")
 
-        elif self.path == "/animes.json":
+        elif path == "/animes.json":
             self.send_file(BASE_DIR / "animes.json", "application/json; charset=utf-8")
 
         else:
-            self.send_json(404, {"erro": "rota nao encontrada"})
+            # Fallback: tenta servir como arquivo estático na pasta do projeto
+            arquivo = BASE_DIR / path.lstrip("/")
+            if arquivo.exists() and arquivo.is_file():
+                ext = arquivo.suffix.lower()
+                tipos = {".html": "text/html; charset=utf-8", ".json": "application/json; charset=utf-8",
+                         ".js": "application/javascript", ".css": "text/css", ".png": "image/png",
+                         ".jpg": "image/jpeg", ".ico": "image/x-icon"}
+                self.send_file(arquivo, tipos.get(ext, "application/octet-stream"))
+            else:
+                self.send_json(404, {"erro": f"rota nao encontrada: {path}"})
 
 
     def do_POST(self):
