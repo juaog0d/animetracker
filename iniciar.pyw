@@ -35,8 +35,8 @@ def run_git(*args):
 # ── Handler HTTP ──────────────────────────────────────────────
 class Handler(http.server.BaseHTTPRequestHandler):
 
-    def log_message(self, *a):
-        pass  # silencia logs no terminal
+    def log_message(self, format, *args):
+        print(f"[HTTP] {self.address_string()} - {format % args}", flush=True)
 
     def send_json(self, code, data):
         body = json.dumps(data, ensure_ascii=False).encode("utf-8")
