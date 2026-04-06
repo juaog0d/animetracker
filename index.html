@@ -375,15 +375,25 @@
     </div>
     <div class="modal-body">
       <div class="setup-intro">
-        <strong>Primeira vez?</strong> Preencha o caminho da sua pasta de Downloads abaixo e clique em Salvar.
-        Depois disso os botões <strong>↓ Atualizar</strong> e <strong>↑ Enviar</strong> vão funcionar com um clique.
+        <strong>Pastas de Downloads</strong> — adicione o caminho de cada usuário.<br>
+        O programa vai procurar o <code style="background:rgba(255,255,255,.06);padding:2px 6px;border-radius:4px;color:var(--gold)">animes.json</code> na primeira pasta onde encontrá-lo.
       </div>
-      <div class="form-group">
-        <label class="form-label">Pasta de Downloads</label>
-        <input type="text" id="cfg-downloads" class="form-input" placeholder="C:\Users\SeuNome\Downloads">
-        <p class="path-hint">
-          Para descobrir: abra o Explorador de Arquivos → clique em <strong>Downloads</strong> → copie o caminho que aparece na barra de endereços no topo.<br>
-          Exemplo: <code>C:\Users\juaog0d\Downloads</code>
+
+      <div class="form-group" style="margin-bottom:8px">
+        <label class="form-label">Caminhos configurados</label>
+        <div id="cfg-paths-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px"></div>
+
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="text" id="cfg-new-path" class="form-input"
+                 placeholder="C:\Users\NomeUsuario\Downloads"
+                 onkeydown="if(event.key==='Enter')cfgAddPath()"
+                 style="flex:1">
+          <button class="btn btn-add" onclick="cfgAddPath()"
+                  style="padding:10px 14px;white-space:nowrap;flex-shrink:0">+ Adicionar</button>
+        </div>
+        <p class="path-hint" style="margin-top:8px">
+          Abra o Explorador de Arquivos → clique em <strong>Downloads</strong> → copie o caminho da barra de endereços.<br>
+          Exemplo: <code>C:\Users\Gabriel\Downloads</code>
         </p>
       </div>
     </div>
@@ -428,8 +438,12 @@
       el.className='server-status online'; lbl.textContent='servidor ativo';
       ob.classList.remove('visible'); setGitButtons(true);
       const cfg=await fetch(API+'/config').then(r=>r.json());
-      if (cfg.downloads) document.getElementById('cfg-downloads').value=cfg.downloads;
-      if (!cfg.downloads) openModal('setup-modal');
+      // Suporta legado (string) e novo formato (array)
+      const paths = Array.isArray(cfg.downloads)
+        ? cfg.downloads
+        : (cfg.downloads ? [cfg.downloads] : []);
+      cfgSetPaths(paths);
+      if (!paths.length) openModal('setup-modal');
     } catch {
       serverOnline=false;
       el.className='server-status offline'; lbl.textContent='servidor offline';
@@ -443,11 +457,51 @@
     });
   }
 
+  // ── GERENCIADOR DE CAMINHOS ──
+  let cfgPaths = [];
+
+  function cfgSetPaths(list) {
+    cfgPaths = [...list];
+    cfgRenderPaths();
+  }
+
+  function cfgRenderPaths() {
+    const container = document.getElementById('cfg-paths-list');
+    if (!container) return;
+    if (!cfgPaths.length) {
+      container.innerHTML = `<div style="font-size:12px;color:var(--muted);padding:8px 0">Nenhum caminho adicionado ainda.</div>`;
+      return;
+    }
+    container.innerHTML = cfgPaths.map((p, i) => `
+      <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:10px 12px;">
+        <span style="font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;color:var(--teal);min-width:20px">${i+1}.</span>
+        <span style="flex:1;font-size:13px;color:var(--text);word-break:break-all">${p}</span>
+        <button onclick="cfgRemovePath(${i})" title="Remover"
+          style="background:rgba(255,77,77,.1);border:1px solid rgba(255,77,77,.3);color:var(--danger);border-radius:7px;padding:4px 10px;cursor:pointer;font-size:14px;font-weight:700;flex-shrink:0;transition:background .2s"
+          onmouseover="this.style.background='rgba(255,77,77,.25)'" onmouseout="this.style.background='rgba(255,77,77,.1)'">✕</button>
+      </div>`).join('');
+  }
+
+  function cfgAddPath() {
+    const inp = document.getElementById('cfg-new-path');
+    const val = inp.value.trim();
+    if (!val) return;
+    if (cfgPaths.includes(val)) { showToast('Esse caminho já está na lista.','warn'); return; }
+    cfgPaths.push(val);
+    cfgRenderPaths();
+    inp.value = '';
+    inp.focus();
+  }
+
+  function cfgRemovePath(i) {
+    cfgPaths.splice(i, 1);
+    cfgRenderPaths();
+  }
+
   // ── CONFIG ──
   async function salvarConfig() {
-    const dl=document.getElementById('cfg-downloads').value.trim();
-    if (!dl) return showToast('Preencha a pasta de Downloads.','warn');
-    const r=await fetch(API+'/salvar-config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({downloads:dl})});
+    if (!cfgPaths.length) return showToast('Adicione pelo menos um caminho de Downloads.','warn');
+    const r=await fetch(API+'/salvar-config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({downloads:cfgPaths})});
     const d=await r.json();
     if (d.ok) { document.getElementById('cfg-status').textContent='✓ Salvo!'; showToast('✓ Configuração salva!'); setTimeout(()=>closeModal('setup-modal'),700); }
   }

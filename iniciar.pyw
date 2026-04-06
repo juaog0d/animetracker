@@ -78,20 +78,31 @@ class Handler(http.server.BaseHTTPRequestHandler):
         # ── Importar JSON dos Downloads ───────────────────────
         elif self.path == "/importar":
             cfg = load_config()
-            downloads = Path(cfg.get("downloads", "")).expanduser()
-            destino   = BASE_DIR / "animes.json"
+            destino = BASE_DIR / "animes.json"
 
-            candidatos = sorted(
-                downloads.glob("animes*.json"),
-                key=lambda f: f.stat().st_mtime,
-                reverse=True
-            )
+            # Aceita tanto string única (legado) quanto lista de caminhos
+            raw_downloads = cfg.get("downloads", [])
+            if isinstance(raw_downloads, str):
+                raw_downloads = [raw_downloads]
 
-            if not candidatos:
-                self.send_json(200, {"ok": False, "msg": "Nenhum arquivo animes*.json encontrado na pasta de Downloads."})
+            origem = None
+            for dl_path in raw_downloads:
+                pasta = Path(dl_path).expanduser()
+                if not pasta.exists():
+                    continue
+                candidatos = sorted(
+                    pasta.glob("animes*.json"),
+                    key=lambda f: f.stat().st_mtime,
+                    reverse=True
+                )
+                if candidatos:
+                    origem = candidatos[0]
+                    break
+
+            if origem is None:
+                self.send_json(200, {"ok": False, "msg": "Nenhum arquivo animes*.json encontrado em nenhuma das pastas configuradas."})
                 return
 
-            origem = candidatos[0]
             shutil.copy2(str(origem), str(destino))
             self.send_json(200, {"ok": True, "msg": f"✓ '{origem.name}' copiado para a pasta do projeto."})
 
