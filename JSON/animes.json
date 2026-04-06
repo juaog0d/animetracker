@@ -1,0 +1,63 @@
+[
+  {
+    "id": 1,
+    "name": "Attack on Titan",
+    "year": 2013,
+    "total": 75,
+    "watched": 75,
+    "status": "completed",
+    "rating": 5.0,
+    "cover": null,
+    "comments": [
+      {
+        "id": 1712345678001,
+        "text": "Obra prima!",
+        "date": "05/04/2024"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Demon Slayer",
+    "year": 2019,
+    "total": 44,
+    "watched": 44,
+    "status": "completed",
+    "rating": 4.5,
+    "cover": null,
+    "comments": []
+  },
+  {
+    "id": 3,
+    "name": "Jujutsu Kaisen",
+    "year": 2020,
+    "total": 48,
+    "watched": 32,
+    "status": "watching",
+    "rating": 4.5,
+    "cover": null,
+    "comments": []
+  },
+  {
+    "id": 4,
+    "name": "One Piece",
+    "year": 1999,
+    "total": 1100,
+    "watched": 400,
+    "status": "watching",
+    "rating": 4.0,
+    "cover": null,
+    "comments": []
+  },
+  {
+    "id": 5,
+    "name": "Solo Leveling",
+    "year": 2024,
+    "total": 12,
+    "watched": 0,
+    "status": "planned",
+    "rating": 0,
+    "cover": null,
+    "comments": []
+  }
+]

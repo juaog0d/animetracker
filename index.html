@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Anime Tracker Pro - V7 (5 Stars)</title>
+  <title>Anime Tracker Pro - Data-Driven (V8)</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Nunito:wght@400;600;700&display=swap');
     
@@ -524,21 +524,38 @@
 
 <script>
   // Estado Global
-  // NOTA: Na v7, convertemos as notas de 10 para 5. (Nota / 2)
-  let animes = JSON.parse(localStorage.getItem('anime_data_v7')) || [
-    {id:1, name:'Attack on Titan', year:2013, total:75, watched:75, status:'completed', rating:5, cover:null, comments:[{id:Date.now()+1, text:'Obra prima!', date:'05/04/2024'}]},
-    {id:2, name:'Demon Slayer', year:2019, total:44, watched:44, status:'completed', rating:4.5, cover:null, comments:[]},
-    {id:3, name:'Jujutsu Kaisen', year:2020, total:48, watched:32, status:'watching', rating:4.5, cover:null, comments:[]},
-    {id:4, name:'One Piece', year:1999, total:1100, watched:400, status:'watching', rating:4, cover:null, comments:[]},
-  ];
-
+  let animes = [];
   let currentFilter = 'all';
   let selectedRating = 0;
   let pendingCoverData = null;
   let editingAnimeId = null;
   let currentOverviewId = null;
 
-  window.onload = () => renderAll();
+  // INICIALIZAÇÃO: Carrega dados do JSON e sincroniza com o LocalStorage
+  window.onload = async () => {
+    await loadInitialData();
+    renderAll();
+  };
+
+  async function loadInitialData() {
+    const localData = localStorage.getItem('anime_data_v8');
+    
+    if (localData) {
+      animes = JSON.parse(localData);
+      console.log("Dados carregados do LocalStorage");
+    } else {
+      try {
+        const response = await fetch('animes.json');
+        if (!response.ok) throw new Error('Não foi possível carregar o animes.json');
+        animes = await response.json();
+        saveToLocal();
+        console.log("Dados carregados do animes.json");
+      } catch (error) {
+        console.error("Erro ao carregar JSON:", error);
+        animes = []; // Fallback se tudo falhar
+      }
+    }
+  }
 
   function renderAll() {
     renderGrid();
@@ -550,7 +567,7 @@
   }
 
   function saveToLocal() {
-    localStorage.setItem('anime_data_v7', JSON.stringify(animes));
+    localStorage.setItem('anime_data_v8', JSON.stringify(animes));
   }
 
   function renderGrid() {
@@ -714,7 +731,6 @@
     renderStarsInput('stars-input', 'rating-val-display');
   }
 
-  /* Novo Sistema de Estrelas (5 Estrelas com Meia Estrela) */
   function renderStarsInput(containerId, displayId) {
     const container = document.getElementById(containerId);
     const display = document.getElementById(displayId);
@@ -737,7 +753,6 @@
     const rect = e.target.getBoundingClientRect();
     const isHalf = (e.clientX - rect.left) < (rect.width / 2);
     const hoverVal = isHalf ? starNum - 0.5 : starNum;
-    
     updateStarsVisual(hoverVal, containerId);
     document.getElementById(displayId).textContent = hoverVal.toFixed(1);
   }
@@ -943,7 +958,7 @@
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(animes));
     const downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", "anime_tracker_v7.json");
+    downloadAnchorNode.setAttribute("download", "anime_tracker_v8.json");
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
