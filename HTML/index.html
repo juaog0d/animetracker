@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anime Tracker Pro - V7 (5 Stars)</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Nunito:wght@400;600;700&display=swap');
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    :root {
+      --dark: #0d0d1a;
+      --panel: #13131f;
+      --card: #1a1a2e;
+      --card2: #16213e;
+      --accent: #e94560;
+      --teal: #00b4d8;
+      --purple: #7b2fff;
+      --gold: #f4a261;
+      --green: #06d6a0;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --border: rgba(255, 255, 255, 0.07);
+      --danger: #ff4d4d;
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--dark);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* Layout Principal */
+    .dashboard { min-height: 100vh; background: var(--dark); padding: 0; }
+    
+    .topbar {
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .topbar-left { display: flex; align-items: center; gap: 20px; }
+    .logo {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .logo span { color: var(--teal); }
+
+    .tab-bar { display: flex; gap: 8px; }
+    .tab {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+      color: var(--muted);
+      border: 1px solid transparent;
+    }
+    .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .tab:hover:not(.active) { background: rgba(255, 255, 255, .06); color: var(--text); }
+
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
+    
+    .btn {
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all .2s;
+      border: none;
+    }
+
+    .btn-add { background: var(--accent); color: #fff; }
+    .btn-add:hover { background: #c73652; transform: translateY(-1px); }
+    
+    .btn-save {
+      background: #0f3460;
+      color: var(--teal);
+      border: 1px solid var(--teal);
+    }
+    .btn-save:hover { background: rgba(0, 180, 216, .15); transform: translateY(-1px); }
+
+    .main-content { padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+
+    /* KPIs */
+    .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .kpi-card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
+    .kpi-card.total::before { background: var(--teal); }
+    .kpi-card.watching::before { background: var(--green); }
+    .kpi-card.planned::before { background: var(--gold); }
+    .kpi-card.completed::before { background: var(--purple); }
+    
+    .kpi-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    .kpi-value { font-family: 'Rajdhani', sans-serif; font-size: 36px; font-weight: 700; line-height: 1; }
+    .kpi-card.total .kpi-value { color: var(--teal); }
+    .kpi-card.watching .kpi-value { color: var(--green); }
+    .kpi-card.planned .kpi-value { color: var(--gold); }
+    .kpi-card.completed .kpi-value { color: var(--purple); }
+
+    /* Middle Row Layout */
+    .middle-row { display: grid; grid-template-columns: 1fr 360px; gap: 20px; }
+    .section-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    .panel-box { background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid var(--border); }
+    
+    /* Grid Principal */
+    .anime-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; }
+    .anime-card {
+      background: var(--card2);
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all .25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+    .anime-card:hover { transform: translateY(-6px); border-color: rgba(233, 69, 96, 0.5); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+
+    .anime-cover-container { width: 100%; aspect-ratio: 2/3; background: #1a1a2e; position: relative; overflow: hidden; }
+    .anime-cover-container img { width: 100%; height: 100%; object-fit: cover; }
+    .anime-cover-placeholder { 
+      width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; 
+      font-size: 40px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); 
+    }
+
+    .status-badge {
+      position: absolute; top: 8px; left: 8px; padding: 4px 8px; border-radius: 6px;
+      font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    .badge-watching { background: var(--green); color: #04372a; }
+    .badge-planned { background: var(--gold); color: #4a2200; }
+    .badge-completed { background: var(--purple); color: #e8d5ff; }
+
+    .rating-badge {
+      position: absolute; top: 8px; right: 8px; background: rgba(0, 0, 0, 0.75);
+      color: var(--gold); padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800;
+      backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .anime-info { padding: 12px; }
+    .anime-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .anime-meta { font-size: 11px; color: var(--muted); margin-bottom: 8px; display: flex; justify-content: space-between; }
+
+    .progress-container { margin-top: 8px; }
+    .progress-bar { height: 5px; background: rgba(255, 255, 255, 0.08); border-radius: 3px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+
+    /* Progresso por Anime */
+    .watching-progress-box {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid var(--border);
+      margin-top: 20px;
+    }
+    .watching-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; }
+    .watching-item { background: var(--card2); border-radius: 10px; padding: 12px; border: 1px solid var(--border); transition: transform 0.2s; cursor: pointer; }
+    .watching-item:hover { transform: scale(1.02); }
+    .watching-info { display: flex; justify-content: space-between; margin-bottom: 8px; align-items: center; }
+    .watching-name { font-weight: 700; font-size: 14px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+    .watching-eps { font-size: 12px; color: var(--muted); font-weight: 600; }
+    .watching-bar-bg { height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; }
+    .watching-bar-fill { height: 100%; background: var(--green); border-radius: 4px; transition: width 0.5s ease; }
+
+    /* Painel Lateral */
+    .right-panel { display: flex; flex-direction: column; gap: 16px; }
+    .side-box { background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid var(--border); }
+    
+    .top-list { display: flex; flex-direction: column; gap: 10px; }
+    .top-item { display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 8px; background: rgba(255,255,255,0.03); transition: background 0.2s; cursor: pointer; }
+    .top-item:hover { background: rgba(255,255,255,0.06); }
+    .top-rank { font-family: 'Rajdhani', sans-serif; font-size: 18px; font-weight: 700; color: var(--accent); min-width: 20px; }
+    .top-img { width: 32px; height: 44px; border-radius: 4px; object-fit: cover; }
+    .top-name { flex: 1; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .top-score { font-weight: 700; color: var(--gold); font-size: 13px; }
+
+    .comment-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; max-height: 250px; overflow-y: auto; padding-right: 4px; }
+    .comment-item { background: var(--card2); border-radius: 10px; padding: 12px; border-left: 4px solid var(--accent); position: relative; }
+    .comment-anime { font-size: 12px; font-weight: 800; color: var(--accent); margin-bottom: 4px; }
+    .comment-text { font-size: 13px; color: var(--text); line-height: 1.5; padding-right: 20px; }
+    .comment-date { font-size: 11px; color: var(--muted); margin-top: 6px; text-align: right; }
+    .btn-del-comment { 
+        position: absolute; top: 8px; right: 8px; background: none; border: none; 
+        color: var(--muted); cursor: pointer; font-size: 14px; opacity: 0; transition: opacity 0.2s;
+    }
+    .comment-item:hover .btn-del-comment { opacity: 1; }
+    .btn-del-comment:hover { color: var(--danger); }
+
+    /* Estrelas com Meia Estrela */
+    .stars-input-container { display: flex; align-items: center; gap: 10px; }
+    .stars-input { display: flex; gap: 2px; }
+    .star-btn { 
+        font-size: 32px; cursor: pointer; color: rgba(255, 255, 255, 0.1); 
+        background: none; border: none; transition: color 0.15s, transform 0.1s; 
+        position: relative; line-height: 1;
+    }
+    .star-btn:hover { transform: scale(1.1); }
+    .star-btn.active { color: var(--gold); }
+    .star-btn.half::after {
+        content: '★'; position: absolute; left: 0; top: 0; width: 50%; 
+        overflow: hidden; color: var(--gold);
+    }
+    .rating-value-display { font-family: 'Rajdhani', sans-serif; font-size: 24px; font-weight: 700; color: var(--gold); min-width: 40px; }
+
+    /* Modais */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9);
+      z-index: 1000; align-items: center; justify-content: center; padding: 20px;
+      backdrop-filter: blur(8px);
+    }
+    .modal-overlay.open { display: flex; }
+    
+    .modal {
+      background: var(--card); border-radius: 20px; width: 500px; max-width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.1); position: relative;
+      max-height: 90vh; overflow-y: auto;
+    }
+    
+    .modal-header { padding: 24px 24px 0; display: flex; justify-content: space-between; align-items: center; }
+    .modal-title { font-family: 'Rajdhani', sans-serif; font-size: 24px; font-weight: 700; color: var(--accent); text-transform: uppercase; }
+    .btn-close { background: none; border: none; color: var(--muted); font-size: 24px; cursor: pointer; }
+
+    .modal-body { padding: 24px; }
+    .form-group { margin-bottom: 18px; }
+    .form-label { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; display: block; }
+    .form-input, .form-select, .form-textarea {
+      width: 100%; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px; color: var(--text); font-family: 'Nunito', sans-serif; font-size: 14px; padding: 12px;
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    .cover-upload-area { border: 2px dashed rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 24px; text-align: center; cursor: pointer; }
+    .preview-img { width: 100px; height: 140px; object-fit: cover; border-radius: 8px; margin: 0 auto 12px; display: block; }
+
+    /* Modal Overview */
+    .overview-modal { width: 700px; padding: 0; overflow: hidden; }
+    .overview-content { display: grid; grid-template-columns: 240px 1fr; height: 100%; }
+    
+    .overview-left { background: #11111b; padding: 30px; display: flex; flex-direction: column; gap: 20px; border-right: 1px solid var(--border); }
+    .overview-cover { width: 100%; aspect-ratio: 2/3; border-radius: 12px; object-fit: cover; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    .overview-stats { display: flex; flex-direction: column; gap: 12px; }
+    .stat-item { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 10px; border: 1px solid var(--border); }
+    .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; margin-bottom: 4px; }
+    .stat-value { font-size: 16px; font-weight: 700; color: var(--text); }
+
+    .overview-right { padding: 30px; display: flex; flex-direction: column; gap: 24px; overflow-y: auto; }
+    .overview-header { display: flex; justify-content: space-between; align-items: flex-start; }
+    .overview-title-box h2 { font-family: 'Rajdhani', sans-serif; font-size: 28px; color: var(--text); line-height: 1.2; }
+    .overview-title-box p { color: var(--muted); font-size: 14px; margin-top: 4px; }
+    
+    .overview-section-title { font-family: 'Rajdhani', sans-serif; font-size: 14px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+    
+    .progress-edit-box { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; }
+    .ep-input-large { width: 60px; background: var(--card); border: 1px solid var(--border); color: #fff; padding: 8px; border-radius: 6px; text-align: center; font-size: 18px; font-weight: 700; }
+    
+    .comment-scroll { flex: 1; max-height: 200px; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 10px; }
+    .comment-item-inner { position: relative; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .comment-item-inner:last-child { border-bottom: none; }
+
+    .modal-footer { padding: 20px 24px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .btn-danger { background: rgba(255, 77, 77, 0.1); color: var(--danger); border: 1px solid var(--danger); }
+    .btn-danger:hover { background: var(--danger); color: #fff; }
+    
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; padding: 12px 24px; background: var(--panel);
+      color: #fff; border-radius: 10px; border-left: 4px solid var(--green);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 2000;
+      transform: translateY(100px); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .toast.show { transform: translateY(0); }
+
+    @media (max-width: 900px) {
+      .middle-row { grid-template-columns: 1fr; }
+      .kpi-row { grid-template-columns: repeat(2, 1fr); }
+      .overview-modal { width: 95vw; }
+      .overview-content { grid-template-columns: 1fr; }
+      .overview-left { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="dashboard">
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="logo">ANIME<span>TRACKER</span></div>
+      <nav class="tab-bar">
+        <div class="tab active" onclick="filterStatus('all')">Todos</div>
+        <div class="tab" onclick="filterStatus('watching')">Assistindo</div>
+        <div class="tab" onclick="filterStatus('planned')">Planejado</div>
+        <div class="tab" onclick="filterStatus('completed')">Concluído</div>
+      </nav>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-save" onclick="exportData()">Exportar</button>
+      <button class="btn btn-add" onclick="openAddModal()">+ Novo Anime</button>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- KPIs -->
+    <div class="kpi-row">
+      <div class="kpi-card total">
+        <div class="kpi-label">Total na Lista</div>
+        <div class="kpi-value" id="stat-total">0</div>
+      </div>
+      <div class="kpi-card watching">
+        <div class="kpi-label">Assistindo Agora</div>
+        <div class="kpi-value" id="stat-watching">0</div>
+      </div>
+      <div class="kpi-card planned">
+        <div class="kpi-label">Para Assistir</div>
+        <div class="kpi-value" id="stat-planned">0</div>
+      </div>
+      <div class="kpi-card completed">
+        <div class="kpi-label">Finalizados</div>
+        <div class="kpi-value" id="stat-completed">0</div>
+      </div>
+    </div>
+
+    <div class="middle-row">
+      <div class="left-content">
+        <section class="panel-box">
+          <div class="section-title">Minha Biblioteca</div>
+          <div class="anime-grid" id="anime-grid"></div>
+        </section>
+
+        <section class="watching-progress-box" id="watching-progress-section">
+          <div class="section-title" style="margin-bottom:0">Progresso dos Animes em Andamento</div>
+          <div class="watching-grid" id="watching-progress-grid"></div>
+        </section>
+      </div>
+
+      <aside class="right-panel">
+        <div class="side-box">
+          <div class="section-title">Top 5 Favoritos</div>
+          <div class="top-list" id="top-ranking"></div>
+        </div>
+
+        <div class="side-box">
+          <div class="section-title">Comentários Recentes</div>
+          <div class="comment-list" id="comment-list"></div>
+        </div>
+      </aside>
+    </div>
+  </main>
+</div>
+
+<!-- Modal Adicionar/Editar -->
+<div class="modal-overlay" id="anime-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-title">Adicionar Anime</h2>
+      <button class="btn-close" onclick="closeModal('anime-modal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Nome do Anime</label>
+        <input type="text" id="inp-name" class="form-input" placeholder="Ex: Jujutsu Kaisen">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Ano</label>
+          <input type="number" id="inp-year" class="form-input" placeholder="2024">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select id="inp-status" class="form-select">
+            <option value="watching">Assistindo</option>
+            <option value="planned">Planejado</option>
+            <option value="completed">Concluído</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Episódios Assistidos</label>
+          <input type="number" id="inp-watched" class="form-input" value="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Total de Episódios</label>
+          <input type="number" id="inp-total" class="form-input" placeholder="12">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Sua Avaliação (0.5 a 5.0)</label>
+        <div class="stars-input-container">
+            <div class="stars-input" id="stars-input"></div>
+            <div class="rating-value-display" id="rating-val-display">0.0</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Capa do Anime</label>
+        <div class="cover-upload-area" onclick="document.getElementById('file-input').click()">
+          <img id="preview-img" class="preview-img" style="display:none">
+          <div id="upload-text">
+            <p style="font-size: 24px; margin-bottom: 8px;">📷</p>
+            <p class="form-label" style="margin-bottom:0">Clique para enviar</p>
+          </div>
+          <input type="file" id="file-input" hidden accept="image/*" onchange="handleImageUpload(event)">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Comentário Inicial</label>
+        <textarea id="inp-comment" class="form-textarea" placeholder="O que você achou?" rows="3"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" style="background:transparent; color:var(--muted)" onclick="closeModal('anime-modal')">Cancelar</button>
+      <button class="btn btn-add" onclick="saveAnime()">Salvar Anime</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Overview -->
+<div class="modal-overlay" id="overview-modal">
+  <div class="modal overview-modal">
+    <div class="overview-content">
+      <div class="overview-left">
+        <img id="view-cover" class="overview-cover" src="" alt="Capa">
+        <div class="overview-stats">
+          <div class="stat-item">
+            <div class="stat-label">Ano de Lançamento</div>
+            <div id="view-year" class="stat-value">2024</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Avaliação</div>
+            <div id="view-rating" class="stat-value" style="color:var(--gold)">★ 4.5</div>
+          </div>
+        </div>
+        <button class="btn btn-danger" onclick="deleteAnimeAction()" style="width:100%; justify-content:center">Excluir Anime</button>
+      </div>
+      <div class="overview-right">
+        <div class="overview-header">
+          <div class="overview-title-box">
+            <h2 id="view-name">Nome do Anime</h2>
+            <p id="view-status-text">Assistindo • 12/24 episódios</p>
+          </div>
+          <button class="btn-close" onclick="closeModal('overview-modal')">&times;</button>
+        </div>
+
+        <div>
+          <div class="overview-section-title">Progresso</div>
+          <div class="progress-edit-box">
+            <input type="number" id="edit-watched" class="ep-input-large" onchange="updateQuickProgress()">
+            <span style="font-size: 20px; color: var(--muted)">/</span>
+            <input type="number" id="edit-total" class="ep-input-large" onchange="updateQuickProgress()">
+            <div style="flex:1; margin-left: 10px;">
+              <div class="progress-bar" style="height: 10px;">
+                <div id="view-progress-fill" class="progress-fill" style="width: 50%; background: var(--green)"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="overview-section-title">Minha Avaliação (5 Estrelas)</div>
+          <div class="stars-input-container">
+            <div class="stars-input" id="view-stars-input"></div>
+            <div class="rating-value-display" id="view-rating-val-display">0.0</div>
+          </div>
+        </div>
+
+        <div style="flex:1; display:flex; flex-direction:column;">
+          <div class="overview-section-title">Comentários</div>
+          <div class="comment-scroll" id="view-comments"></div>
+          <div style="margin-top: 12px; display:flex; gap: 8px;">
+            <input type="text" id="quick-comment" class="form-input" placeholder="Adicionar comentário...">
+            <button class="btn btn-add" onclick="addQuickComment()" style="padding: 0 15px;">Postar</button>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap: 10px; margin-top: 10px;">
+          <button class="btn btn-save" onclick="openEditFromOverview()">Editar Tudo</button>
+          <button class="btn btn-add" onclick="closeModal('overview-modal')">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast">✓ Ação realizada com sucesso!</div>
+
+<script>
+  // Estado Global
+  // NOTA: Na v7, convertemos as notas de 10 para 5. (Nota / 2)
+  let animes = JSON.parse(localStorage.getItem('anime_data_v7')) || [
+    {id:1, name:'Attack on Titan', year:2013, total:75, watched:75, status:'completed', rating:5, cover:null, comments:[{id:Date.now()+1, text:'Obra prima!', date:'05/04/2024'}]},
+    {id:2, name:'Demon Slayer', year:2019, total:44, watched:44, status:'completed', rating:4.5, cover:null, comments:[]},
+    {id:3, name:'Jujutsu Kaisen', year:2020, total:48, watched:32, status:'watching', rating:4.5, cover:null, comments:[]},
+    {id:4, name:'One Piece', year:1999, total:1100, watched:400, status:'watching', rating:4, cover:null, comments:[]},
+  ];
+
+  let currentFilter = 'all';
+  let selectedRating = 0;
+  let pendingCoverData = null;
+  let editingAnimeId = null;
+  let currentOverviewId = null;
+
+  window.onload = () => renderAll();
+
+  function renderAll() {
+    renderGrid();
+    renderStats();
+    renderTopRanking();
+    renderGlobalComments();
+    renderWatchingProgress();
+    saveToLocal();
+  }
+
+  function saveToLocal() {
+    localStorage.setItem('anime_data_v7', JSON.stringify(animes));
+  }
+
+  function renderGrid() {
+    const grid = document.getElementById('anime-grid');
+    const filtered = animes.filter(a => currentFilter === 'all' || a.status === currentFilter);
+    
+    if (filtered.length === 0) {
+      grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--muted)">Nenhum anime encontrado.</div>`;
+      return;
+    }
+
+    grid.innerHTML = filtered.map(a => {
+      const pct = a.total > 0 ? Math.round((a.watched / a.total) * 100) : 0;
+      const statusClasses = { watching: 'badge-watching', planned: 'badge-planned', completed: 'badge-completed' };
+      const fillClasses = { watching: 'var(--green)', planned: 'var(--gold)', completed: 'var(--purple)' };
+      
+      return `
+        <div class="anime-card" onclick="openOverview(${a.id})">
+          <div class="anime-cover-container">
+            ${a.cover ? `<img src="${a.cover}" alt="${a.name}">` : `<div class="anime-cover-placeholder">📺</div>`}
+            <div class="status-badge ${statusClasses[a.status]}">${translateStatus(a.status)}</div>
+            ${a.rating ? `<div class="rating-badge">★ ${a.rating.toFixed(1)}</div>` : ''}
+          </div>
+          <div class="anime-info">
+            <div class="anime-name" title="${a.name}">${a.name}</div>
+            <div class="anime-meta">
+              <span>${a.year}</span>
+              <span>${a.watched}/${a.total} eps</span>
+            </div>
+            <div class="progress-container">
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: ${pct}%; background: ${fillClasses[a.status]}"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderWatchingProgress() {
+    const watching = animes.filter(a => a.status === 'watching');
+    const section = document.getElementById('watching-progress-section');
+    const grid = document.getElementById('watching-progress-grid');
+    
+    if (watching.length === 0) {
+      section.style.display = 'none';
+      return;
+    }
+    
+    section.style.display = 'block';
+    grid.innerHTML = watching.map(a => {
+        const pct = a.total > 0 ? Math.round((a.watched / a.total) * 100) : 0;
+        return `
+            <div class="watching-item" onclick="openOverview(${a.id})">
+                <div class="watching-info">
+                    <span class="watching-name" title="${a.name}">${a.name}</span>
+                    <span class="watching-eps">${a.watched} / ${a.total} eps</span>
+                </div>
+                <div class="watching-bar-bg">
+                    <div class="watching-bar-fill" style="width: ${pct}%"></div>
+                </div>
+                <div style="text-align:right; font-size:10px; color:var(--muted); margin-top:4px;">${pct}% concluído</div>
+            </div>
+        `;
+    }).join('');
+  }
+
+  function renderTopRanking() {
+    const top = animes
+      .filter(a => a.rating > 0)
+      .sort((a, b) => b.rating - a.rating)
+      .slice(0, 5);
+    
+    const container = document.getElementById('top-ranking');
+    if (top.length === 0) {
+      container.innerHTML = `<div style="font-size:12px; color:var(--muted); text-align:center; padding:10px;">Avalie animes para ver o Top 5.</div>`;
+      return;
+    }
+
+    container.innerHTML = top.map((a, i) => `
+      <div class="top-item" onclick="openOverview(${a.id})">
+        <div class="top-rank">#${i+1}</div>
+        ${a.cover ? `<img src="${a.cover}" class="top-img">` : `<div class="top-img" style="background:var(--card2); display:flex; align-items:center; justify-content:center; font-size:10px">📺</div>`}
+        <div class="top-name">${a.name}</div>
+        <div class="top-score">★ ${a.rating.toFixed(1)}</div>
+      </div>
+    `).join('');
+  }
+
+  function renderGlobalComments() {
+    const list = document.getElementById('comment-list');
+    let all = [];
+    animes.forEach(a => {
+      if (a.comments) a.comments.forEach(c => all.push({ animeId: a.id, animeName: a.name, ...c }));
+    });
+    all.sort((a, b) => b.id - a.id);
+    if (all.length === 0) {
+      list.innerHTML = `<div style="text-align:center; color:var(--muted); font-size:12px; padding:20px;">Sem comentários.</div>`;
+      return;
+    }
+    list.innerHTML = all.slice(0, 8).map(c => `
+      <div class="comment-item">
+        <button class="btn-del-comment" onclick="deleteComment(${c.animeId}, ${c.id}, event)">×</button>
+        <div class="comment-anime">${c.animeName}</div>
+        <div class="comment-text">${c.text}</div>
+        <div class="comment-date">${c.date}</div>
+      </div>
+    `).join('');
+  }
+
+  function deleteComment(animeId, commentId, event) {
+    if (event) event.stopPropagation();
+    if (!confirm("Excluir este comentário?")) return;
+    const anime = animes.find(a => a.id === animeId);
+    if (anime && anime.comments) {
+      anime.comments = anime.comments.filter(c => c.id !== commentId);
+      renderAll();
+      if (currentOverviewId === animeId) renderOverviewComments(anime);
+      showToast("Comentário excluído.");
+    }
+  }
+
+  function translateStatus(s) {
+    return { watching: 'Assistindo', planned: 'Planejado', completed: 'Concluído' }[s];
+  }
+
+  function renderStats() {
+    document.getElementById('stat-total').textContent = animes.length;
+    document.getElementById('stat-watching').textContent = animes.filter(a => a.status === 'watching').length;
+    document.getElementById('stat-planned').textContent = animes.filter(a => a.status === 'planned').length;
+    document.getElementById('stat-completed').textContent = animes.filter(a => a.status === 'completed').length;
+  }
+
+  function filterStatus(s) {
+    currentFilter = s;
+    document.querySelectorAll('.tab').forEach(t => {
+      t.classList.toggle('active', t.textContent.toLowerCase().includes(translateStatus(s)?.toLowerCase() || 'todos'));
+    });
+    renderGrid();
+  }
+
+  function openAddModal() {
+    editingAnimeId = null;
+    document.getElementById('modal-title').textContent = "Adicionar Anime";
+    resetForm();
+    openModal('anime-modal');
+  }
+
+  function resetForm() {
+    document.getElementById('inp-name').value = '';
+    document.getElementById('inp-year').value = new Date().getFullYear();
+    document.getElementById('inp-status').value = 'watching';
+    document.getElementById('inp-watched').value = 0;
+    document.getElementById('inp-total').value = '';
+    document.getElementById('inp-comment').value = '';
+    selectedRating = 0;
+    pendingCoverData = null;
+    document.getElementById('preview-img').style.display = 'none';
+    document.getElementById('upload-text').style.display = 'block';
+    renderStarsInput('stars-input', 'rating-val-display');
+  }
+
+  /* Novo Sistema de Estrelas (5 Estrelas com Meia Estrela) */
+  function renderStarsInput(containerId, displayId) {
+    const container = document.getElementById(containerId);
+    const display = document.getElementById(displayId);
+    display.textContent = selectedRating.toFixed(1);
+    
+    container.innerHTML = Array.from({length: 5}, (_, i) => {
+      const starNum = i + 1;
+      let className = 'star-btn';
+      if (selectedRating >= starNum) className += ' active';
+      else if (selectedRating === starNum - 0.5) className += ' half';
+      
+      return `<button class="${className}" 
+              onmousemove="handleStarHover(event, ${starNum}, '${containerId}', '${displayId}')"
+              onclick="handleStarClick(event, ${starNum})"
+              onmouseleave="resetStarDisplay('${containerId}', '${displayId}')">★</button>`;
+    }).join('');
+  }
+
+  function handleStarHover(e, starNum, containerId, displayId) {
+    const rect = e.target.getBoundingClientRect();
+    const isHalf = (e.clientX - rect.left) < (rect.width / 2);
+    const hoverVal = isHalf ? starNum - 0.5 : starNum;
+    
+    updateStarsVisual(hoverVal, containerId);
+    document.getElementById(displayId).textContent = hoverVal.toFixed(1);
+  }
+
+  function handleStarClick(e, starNum) {
+    const rect = e.target.getBoundingClientRect();
+    const isHalf = (e.clientX - rect.left) < (rect.width / 2);
+    selectedRating = isHalf ? starNum - 0.5 : starNum;
+    
+    if (currentOverviewId) {
+        const anime = animes.find(a => a.id === currentOverviewId);
+        if (anime) {
+            anime.rating = selectedRating;
+            renderAll();
+            document.getElementById('view-rating').innerHTML = `★ ${selectedRating.toFixed(1)}`;
+        }
+    }
+  }
+
+  function resetStarDisplay(containerId, displayId) {
+    updateStarsVisual(selectedRating, containerId);
+    document.getElementById(displayId).textContent = selectedRating.toFixed(1);
+  }
+
+  function updateStarsVisual(val, containerId) {
+    const stars = document.getElementById(containerId).querySelectorAll('.star-btn');
+    stars.forEach((star, i) => {
+        const starNum = i + 1;
+        star.classList.remove('active', 'half');
+        if (val >= starNum) star.classList.add('active');
+        else if (val === starNum - 0.5) star.classList.add('half');
+    });
+  }
+
+  function handleImageUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      pendingCoverData = ev.target.result;
+      document.getElementById('preview-img').src = pendingCoverData;
+      document.getElementById('preview-img').style.display = 'block';
+      document.getElementById('upload-text').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function saveAnime() {
+    const name = document.getElementById('inp-name').value.trim();
+    if (!name) return showToast("Dê um nome ao anime!", "var(--danger)");
+
+    const data = {
+      name,
+      year: parseInt(document.getElementById('inp-year').value) || 2024,
+      status: document.getElementById('inp-status').value,
+      watched: parseInt(document.getElementById('inp-watched').value) || 0,
+      total: parseInt(document.getElementById('inp-total').value) || 12,
+      rating: selectedRating || null,
+      cover: pendingCoverData,
+      comments: []
+    };
+
+    const commentText = document.getElementById('inp-comment').value.trim();
+    if (commentText) {
+      data.comments.push({ id: Date.now(), text: commentText, date: new Date().toLocaleDateString('pt-BR') });
+    }
+
+    if (editingAnimeId) {
+      const index = animes.findIndex(a => a.id === editingAnimeId);
+      const oldComments = animes[index].comments || [];
+      animes[index] = { ...animes[index], ...data, comments: [...oldComments, ...data.comments] };
+    } else {
+      data.id = Date.now();
+      animes.push(data);
+    }
+
+    closeModal('anime-modal');
+    renderAll();
+    if (currentOverviewId) openOverview(currentOverviewId);
+  }
+
+  function openOverview(id) {
+    const anime = animes.find(a => a.id === id);
+    if (!anime) return;
+    currentOverviewId = id;
+    selectedRating = anime.rating || 0;
+
+    document.getElementById('view-name').textContent = anime.name;
+    document.getElementById('view-year').textContent = anime.year;
+    document.getElementById('view-cover').src = anime.cover || 'https://via.placeholder.com/240x360?text=Sem+Capa';
+    document.getElementById('view-rating').innerHTML = anime.rating ? `★ ${anime.rating.toFixed(1)}` : 'Não avaliado';
+    document.getElementById('view-status-text').textContent = `${translateStatus(anime.status)} • ${anime.watched}/${anime.total} episódios`;
+    
+    document.getElementById('edit-watched').value = anime.watched;
+    document.getElementById('edit-total').value = anime.total;
+    
+    const pct = anime.total > 0 ? (anime.watched / anime.total) * 100 : 0;
+    const fill = document.getElementById('view-progress-fill');
+    fill.style.width = `${pct}%`;
+    fill.style.background = anime.status === 'completed' ? 'var(--purple)' : (anime.status === 'planned' ? 'var(--gold)' : 'var(--green)');
+
+    renderStarsInput('view-stars-input', 'view-rating-val-display');
+    renderOverviewComments(anime);
+    openModal('overview-modal');
+  }
+
+  function renderOverviewComments(anime) {
+    const container = document.getElementById('view-comments');
+    if (!anime.comments || anime.comments.length === 0) {
+      container.innerHTML = `<div class="no-comments">Nenhum comentário ainda.</div>`;
+      return;
+    }
+    container.innerHTML = anime.comments.slice().reverse().map(c => `
+      <div class="comment-item-inner">
+        <button class="btn-del-comment" style="opacity:1" onclick="deleteComment(${anime.id}, ${c.id}, event)">×</button>
+        <div style="font-size: 13px; color: var(--text); padding-right:25px;">${c.text}</div>
+        <div style="font-size: 10px; color: var(--muted); margin-top: 4px;">${c.date}</div>
+      </div>
+    `).join('');
+  }
+
+  function addQuickComment() {
+    const txt = document.getElementById('quick-comment').value.trim();
+    if (!txt) return;
+    const anime = animes.find(a => a.id === currentOverviewId);
+    if (!anime) return;
+    if (!anime.comments) anime.comments = [];
+    anime.comments.push({ id: Date.now(), text: txt, date: new Date().toLocaleDateString('pt-BR') });
+    document.getElementById('quick-comment').value = '';
+    renderOverviewComments(anime);
+    renderGlobalComments();
+    saveToLocal();
+  }
+
+  function updateQuickProgress() {
+    const anime = animes.find(a => a.id === currentOverviewId);
+    if (!anime) return;
+    const watched = parseInt(document.getElementById('edit-watched').value) || 0;
+    const total = parseInt(document.getElementById('edit-total').value) || 0;
+    anime.watched = watched;
+    anime.total = total;
+    if (watched >= total && total > 0) anime.status = 'completed';
+    else if (watched > 0) anime.status = 'watching';
+    document.getElementById('view-status-text').textContent = `${translateStatus(anime.status)} • ${anime.watched}/${anime.total} episódios`;
+    const pct = total > 0 ? (watched / total) * 100 : 0;
+    document.getElementById('view-progress-fill').style.width = `${pct}%`;
+    renderAll();
+  }
+
+  function openEditFromOverview() {
+    const anime = animes.find(a => a.id === currentOverviewId);
+    if (!anime) return;
+    editingAnimeId = anime.id;
+    document.getElementById('modal-title').textContent = "Editar Anime";
+    document.getElementById('inp-name').value = anime.name;
+    document.getElementById('inp-year').value = anime.year;
+    document.getElementById('inp-status').value = anime.status;
+    document.getElementById('inp-watched').value = anime.watched;
+    document.getElementById('inp-total').value = anime.total;
+    document.getElementById('inp-comment').value = '';
+    selectedRating = anime.rating || 0;
+    pendingCoverData = anime.cover;
+    if (anime.cover) {
+      document.getElementById('preview-img').src = anime.cover;
+      document.getElementById('preview-img').style.display = 'block';
+      document.getElementById('upload-text').style.display = 'none';
+    } else {
+      document.getElementById('preview-img').style.display = 'none';
+      document.getElementById('upload-text').style.display = 'block';
+    }
+    renderStarsInput('stars-input', 'rating-val-display');
+    closeModal('overview-modal');
+    openModal('anime-modal');
+  }
+
+  function deleteAnimeAction() {
+    if (!confirm("Excluir este anime permanentemente?")) return;
+    animes = animes.filter(a => a.id !== currentOverviewId);
+    closeModal('overview-modal');
+    renderAll();
+    showToast("Anime removido.");
+  }
+
+  function openModal(id) {
+    document.getElementById(id).classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+    document.body.style.overflow = 'auto';
+    if (id === 'overview-modal') currentOverviewId = null;
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  function exportData() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(animes));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "anime_tracker_v7.json");
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  }
+
+  window.onclick = function(event) {
+    if (event.target.classList.contains('modal-overlay')) closeModal(event.target.id);
+  }
+</script>
+
+</body>
+</html>
