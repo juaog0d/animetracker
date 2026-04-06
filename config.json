@@ -1,3 +1,6 @@
 {
-  "downloads": "D:\\Download"
+  "downloads": "D:\\Download",
+  "search_dirs": [
+    "D:\\Download"
+  ]
 }
