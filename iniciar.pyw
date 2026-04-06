@@ -35,8 +35,8 @@ def run_git(*args):
 # ── Handler HTTP ──────────────────────────────────────────────
 class Handler(http.server.BaseHTTPRequestHandler):
 
-    def log_message(self, format, *args):
-        print(f"[HTTP] {self.address_string()} - {format % args}", flush=True)
+    def log_message(self, *a):
+        pass  # silencia logs no terminal
 
     def send_json(self, code, data):
         body = json.dumps(data, ensure_ascii=False).encode("utf-8")
@@ -56,47 +56,15 @@ class Handler(http.server.BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.end_headers()
 
-    def send_file(self, filepath, content_type):
-        try:
-            data = filepath.read_bytes()
-            self.send_response(200)
-            self.send_header("Content-Type", content_type)
-            self.send_header("Content-Length", str(len(data)))
-            self.send_header("Access-Control-Allow-Origin", "*")
-            self.send_header("Cache-Control", "no-store")
-            self.end_headers()
-            self.wfile.write(data)
-        except FileNotFoundError:
-            self.send_json(404, {"erro": "arquivo nao encontrado"})
-
     def do_GET(self):
-        # Remove query string se houver
-        path = self.path.split("?")[0].split("#")[0]
-
-        if path == "/ping":
+        if self.path == "/ping":
             self.send_json(200, {"ok": True})
 
-        elif path == "/config":
+        elif self.path == "/config":
             self.send_json(200, load_config())
 
-        elif path in ("/", "/index.html", ""):
-            self.send_file(BASE_DIR / "index.html", "text/html; charset=utf-8")
-
-        elif path == "/animes.json":
-            self.send_file(BASE_DIR / "animes.json", "application/json; charset=utf-8")
-
         else:
-            # Fallback: tenta servir como arquivo estático na pasta do projeto
-            arquivo = BASE_DIR / path.lstrip("/")
-            if arquivo.exists() and arquivo.is_file():
-                ext = arquivo.suffix.lower()
-                tipos = {".html": "text/html; charset=utf-8", ".json": "application/json; charset=utf-8",
-                         ".js": "application/javascript", ".css": "text/css", ".png": "image/png",
-                         ".jpg": "image/jpeg", ".ico": "image/x-icon"}
-                self.send_file(arquivo, tipos.get(ext, "application/octet-stream"))
-            else:
-                self.send_json(404, {"erro": f"rota nao encontrada: {path}"})
-
+            self.send_json(404, {"erro": "rota não encontrada"})
 
     def do_POST(self):
         length = int(self.headers.get("Content-Length", 0))
@@ -110,31 +78,20 @@ class Handler(http.server.BaseHTTPRequestHandler):
         # ── Importar JSON dos Downloads ───────────────────────
         elif self.path == "/importar":
             cfg = load_config()
-            destino = BASE_DIR / "animes.json"
+            downloads = Path(cfg.get("downloads", "")).expanduser()
+            destino   = BASE_DIR / "animes.json"
 
-            # Aceita tanto string única (legado) quanto lista de caminhos
-            raw_downloads = cfg.get("downloads", [])
-            if isinstance(raw_downloads, str):
-                raw_downloads = [raw_downloads]
+            candidatos = sorted(
+                downloads.glob("animes*.json"),
+                key=lambda f: f.stat().st_mtime,
+                reverse=True
+            )
 
-            origem = None
-            for dl_path in raw_downloads:
-                pasta = Path(dl_path).expanduser()
-                if not pasta.exists():
-                    continue
-                candidatos = sorted(
-                    pasta.glob("animes*.json"),
-                    key=lambda f: f.stat().st_mtime,
-                    reverse=True
-                )
-                if candidatos:
-                    origem = candidatos[0]
-                    break
-
-            if origem is None:
-                self.send_json(200, {"ok": False, "msg": "Nenhum arquivo animes*.json encontrado em nenhuma das pastas configuradas."})
+            if not candidatos:
+                self.send_json(200, {"ok": False, "msg": "Nenhum arquivo animes*.json encontrado na pasta de Downloads."})
                 return
 
+            origem = candidatos[0]
             shutil.copy2(str(origem), str(destino))
             self.send_json(200, {"ok": True, "msg": f"✓ '{origem.name}' copiado para a pasta do projeto."})
 
@@ -169,6 +126,6 @@ def iniciar_servidor():
 if __name__ == "__main__":
     t = threading.Thread(target=iniciar_servidor, daemon=True)
     t.start()
-    webbrowser.open(f"http://127.0.0.1:{PORT}/")
+    webbrowser.open(f"file:///{BASE_DIR / 'index.html'}")
     # mantém o processo vivo
     t.join()
