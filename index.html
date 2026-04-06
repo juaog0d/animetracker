@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Anime Tracker Pro - Data-Driven (V8)</title>
+  <title>Anime Tracker Pro - Git Sync</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Nunito:wght@400;600;700&display=swap');
     
@@ -25,98 +25,69 @@
       --danger: #ff4d4d;
     }
 
-    body {
-      font-family: 'Nunito', sans-serif;
-      background: var(--dark);
-      color: var(--text);
-      overflow-x: hidden;
-    }
+    body { font-family: 'Nunito', sans-serif; background: var(--dark); color: var(--text); overflow-x: hidden; }
+    .dashboard { min-height: 100vh; }
 
-    /* Layout Principal */
-    .dashboard { min-height: 100vh; background: var(--dark); padding: 0; }
-    
+    /* ===== TOPBAR ===== */
     .topbar {
-      background: var(--panel);
-      border-bottom: 1px solid var(--border);
-      padding: 0 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 60px;
-      position: sticky;
-      top: 0;
-      z-index: 50;
+      background: var(--panel); border-bottom: 1px solid var(--border);
+      padding: 0 24px; display: flex; align-items: center; justify-content: space-between;
+      height: 60px; position: sticky; top: 0; z-index: 50;
     }
-
     .topbar-left { display: flex; align-items: center; gap: 20px; }
-    .logo {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--accent);
-      letter-spacing: 2px;
-      text-transform: uppercase;
-    }
+    .logo { font-family: 'Rajdhani', sans-serif; font-size: 22px; font-weight: 700; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; }
     .logo span { color: var(--teal); }
-
     .tab-bar { display: flex; gap: 8px; }
-    .tab {
-      padding: 8px 16px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all .2s;
-      color: var(--muted);
-      border: 1px solid transparent;
-    }
+    .tab { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .2s; color: var(--muted); border: 1px solid transparent; }
     .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-    .tab:hover:not(.active) { background: rgba(255, 255, 255, .06); color: var(--text); }
+    .tab:hover:not(.active) { background: rgba(255,255,255,.06); color: var(--text); }
 
-    .topbar-right { display: flex; align-items: center; gap: 12px; }
-    
+    .topbar-right { display: flex; align-items: center; gap: 10px; }
+
     .btn {
-      padding: 10px 18px;
-      border-radius: 10px;
-      font-family: 'Nunito', sans-serif;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: all .2s;
-      border: none;
+      padding: 10px 18px; border-radius: 10px; font-family: 'Nunito', sans-serif;
+      font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center;
+      gap: 8px; transition: all .2s; border: none;
     }
-
     .btn-add { background: var(--accent); color: #fff; }
     .btn-add:hover { background: #c73652; transform: translateY(-1px); }
-    
-    .btn-save {
-      background: #0f3460;
-      color: var(--teal);
-      border: 1px solid var(--teal);
+    .btn-export {
+      background: #0f3460; color: var(--teal); border: 1px solid var(--teal);
+      position: relative;
     }
-    .btn-save:hover { background: rgba(0, 180, 216, .15); transform: translateY(-1px); }
+    .btn-export:hover { background: rgba(0,180,216,.15); transform: translateY(-1px); }
+    .btn-import { background: rgba(123,47,255,.12); color: var(--purple); border: 1px solid var(--purple); }
+    .btn-import:hover { background: rgba(123,47,255,.25); transform: translateY(-1px); }
+    .btn-sync { background: rgba(6,214,160,.1); color: var(--green); border: 1px solid var(--green); }
+    .btn-sync:hover { background: rgba(6,214,160,.2); transform: translateY(-1px); }
 
+    /* Unsaved indicator dot */
+    .unsaved-dot {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--gold);
+      display: none; animation: pulse-dot 1.5s infinite;
+    }
+    .unsaved-dot.visible { display: block; }
+    @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+    /* ===== MAIN ===== */
     .main-content { padding: 24px; display: flex; flex-direction: column; gap: 20px; }
 
-    /* KPIs */
-    .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-    .kpi-card {
-      background: var(--card);
-      border-radius: 12px;
-      padding: 20px;
-      border: 1px solid var(--border);
-      position: relative;
-      overflow: hidden;
+    /* Info Banner */
+    .info-banner {
+      padding: 14px 18px; background: rgba(0,180,216,.08); border: 1px solid rgba(0,180,216,.18);
+      border-radius: 12px; font-size: 13px; color: var(--text); line-height: 1.6;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
     }
+    .info-banner code { background: rgba(255,255,255,.06); padding: 2px 6px; border-radius: 6px; color: var(--gold); }
+
+    /* ===== KPIs ===== */
+    .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .kpi-card { background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid var(--border); position: relative; overflow: hidden; }
     .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
     .kpi-card.total::before { background: var(--teal); }
     .kpi-card.watching::before { background: var(--green); }
     .kpi-card.planned::before { background: var(--gold); }
     .kpi-card.completed::before { background: var(--purple); }
-    
     .kpi-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
     .kpi-value { font-family: 'Rajdhani', sans-serif; font-size: 36px; font-weight: 700; line-height: 1; }
     .kpi-card.total .kpi-value { color: var(--teal); }
@@ -124,75 +95,40 @@
     .kpi-card.planned .kpi-value { color: var(--gold); }
     .kpi-card.completed .kpi-value { color: var(--purple); }
 
-    /* Middle Row Layout */
+    /* ===== LAYOUT ===== */
     .middle-row { display: grid; grid-template-columns: 1fr 360px; gap: 20px; }
     .section-title {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      font-family: 'Rajdhani', sans-serif; font-size: 16px; font-weight: 600;
+      color: var(--muted); text-transform: uppercase; letter-spacing: 1px;
+      margin-bottom: 16px; display: flex; align-items: center; gap: 10px;
     }
     .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-
     .panel-box { background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid var(--border); }
-    
-    /* Grid Principal */
+
+    /* ===== GRID ===== */
     .anime-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; }
     .anime-card {
-      background: var(--card2);
-      border-radius: 12px;
-      overflow: hidden;
-      border: 1px solid var(--border);
-      cursor: pointer;
-      transition: all .25s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
+      background: var(--card2); border-radius: 12px; overflow: hidden;
+      border: 1px solid var(--border); cursor: pointer;
+      transition: all .25s cubic-bezier(0.4, 0, 0.2, 1); position: relative;
     }
-    .anime-card:hover { transform: translateY(-6px); border-color: rgba(233, 69, 96, 0.5); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
-
+    .anime-card:hover { transform: translateY(-6px); border-color: rgba(233,69,96,0.5); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
     .anime-cover-container { width: 100%; aspect-ratio: 2/3; background: #1a1a2e; position: relative; overflow: hidden; }
     .anime-cover-container img { width: 100%; height: 100%; object-fit: cover; }
-    .anime-cover-placeholder { 
-      width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; 
-      font-size: 40px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); 
-    }
-
-    .status-badge {
-      position: absolute; top: 8px; left: 8px; padding: 4px 8px; border-radius: 6px;
-      font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    }
+    .anime-cover-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 40px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+    .status-badge { position: absolute; top: 8px; left: 8px; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
     .badge-watching { background: var(--green); color: #04372a; }
     .badge-planned { background: var(--gold); color: #4a2200; }
     .badge-completed { background: var(--purple); color: #e8d5ff; }
-
-    .rating-badge {
-      position: absolute; top: 8px; right: 8px; background: rgba(0, 0, 0, 0.75);
-      color: var(--gold); padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800;
-      backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.1);
-    }
-
+    .rating-badge { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.75); color: var(--gold); padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.1); }
     .anime-info { padding: 12px; }
     .anime-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .anime-meta { font-size: 11px; color: var(--muted); margin-bottom: 8px; display: flex; justify-content: space-between; }
-
-    .progress-container { margin-top: 8px; }
-    .progress-bar { height: 5px; background: rgba(255, 255, 255, 0.08); border-radius: 3px; overflow: hidden; }
+    .progress-bar { height: 5px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; }
     .progress-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
 
-    /* Progresso por Anime */
-    .watching-progress-box {
-      background: var(--card);
-      border-radius: 12px;
-      padding: 20px;
-      border: 1px solid var(--border);
-      margin-top: 20px;
-    }
+    /* ===== WATCHING PROGRESS ===== */
+    .watching-progress-box { background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid var(--border); margin-top: 20px; }
     .watching-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; }
     .watching-item { background: var(--card2); border-radius: 10px; padding: 12px; border: 1px solid var(--border); transition: transform 0.2s; cursor: pointer; }
     .watching-item:hover { transform: scale(1.02); }
@@ -202,10 +138,9 @@
     .watching-bar-bg { height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; }
     .watching-bar-fill { height: 100%; background: var(--green); border-radius: 4px; transition: width 0.5s ease; }
 
-    /* Painel Lateral */
+    /* ===== RIGHT PANEL ===== */
     .right-panel { display: flex; flex-direction: column; gap: 16px; }
     .side-box { background: var(--card); border-radius: 12px; padding: 20px; border: 1px solid var(--border); }
-    
     .top-list { display: flex; flex-direction: column; gap: 10px; }
     .top-item { display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 8px; background: rgba(255,255,255,0.03); transition: background 0.2s; cursor: pointer; }
     .top-item:hover { background: rgba(255,255,255,0.06); }
@@ -213,101 +148,101 @@
     .top-img { width: 32px; height: 44px; border-radius: 4px; object-fit: cover; }
     .top-name { flex: 1; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .top-score { font-weight: 700; color: var(--gold); font-size: 13px; }
-
     .comment-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; max-height: 250px; overflow-y: auto; padding-right: 4px; }
     .comment-item { background: var(--card2); border-radius: 10px; padding: 12px; border-left: 4px solid var(--accent); position: relative; }
     .comment-anime { font-size: 12px; font-weight: 800; color: var(--accent); margin-bottom: 4px; }
     .comment-text { font-size: 13px; color: var(--text); line-height: 1.5; padding-right: 20px; }
     .comment-date { font-size: 11px; color: var(--muted); margin-top: 6px; text-align: right; }
-    .btn-del-comment { 
-        position: absolute; top: 8px; right: 8px; background: none; border: none; 
-        color: var(--muted); cursor: pointer; font-size: 14px; opacity: 0; transition: opacity 0.2s;
-    }
+    .btn-del-comment { position: absolute; top: 8px; right: 8px; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 14px; opacity: 0; transition: opacity 0.2s; }
     .comment-item:hover .btn-del-comment { opacity: 1; }
     .btn-del-comment:hover { color: var(--danger); }
 
-    /* Estrelas com Meia Estrela */
+    /* ===== STARS ===== */
     .stars-input-container { display: flex; align-items: center; gap: 10px; }
     .stars-input { display: flex; gap: 2px; }
-    .star-btn { 
-        font-size: 32px; cursor: pointer; color: rgba(255, 255, 255, 0.1); 
-        background: none; border: none; transition: color 0.15s, transform 0.1s; 
-        position: relative; line-height: 1;
-    }
+    .star-btn { font-size: 32px; cursor: pointer; color: rgba(255,255,255,0.1); background: none; border: none; transition: color 0.15s, transform 0.1s; position: relative; line-height: 1; }
     .star-btn:hover { transform: scale(1.1); }
     .star-btn.active { color: var(--gold); }
-    .star-btn.half::after {
-        content: '★'; position: absolute; left: 0; top: 0; width: 50%; 
-        overflow: hidden; color: var(--gold);
-    }
+    .star-btn.half::after { content: '★'; position: absolute; left: 0; top: 0; width: 50%; overflow: hidden; color: var(--gold); }
     .rating-value-display { font-family: 'Rajdhani', sans-serif; font-size: 24px; font-weight: 700; color: var(--gold); min-width: 40px; }
 
-    /* Modais */
-    .modal-overlay {
-      display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9);
-      z-index: 1000; align-items: center; justify-content: center; padding: 20px;
-      backdrop-filter: blur(8px);
-    }
+    /* ===== MODAIS ===== */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(8px); }
     .modal-overlay.open { display: flex; }
-    
-    .modal {
-      background: var(--card); border-radius: 20px; width: 500px; max-width: 100%;
-      border: 1px solid rgba(255, 255, 255, 0.1); position: relative;
-      max-height: 90vh; overflow-y: auto;
-    }
-    
+    .modal { background: var(--card); border-radius: 20px; width: 500px; max-width: 100%; border: 1px solid rgba(255,255,255,0.1); position: relative; max-height: 90vh; overflow-y: auto; }
     .modal-header { padding: 24px 24px 0; display: flex; justify-content: space-between; align-items: center; }
     .modal-title { font-family: 'Rajdhani', sans-serif; font-size: 24px; font-weight: 700; color: var(--accent); text-transform: uppercase; }
     .btn-close { background: none; border: none; color: var(--muted); font-size: 24px; cursor: pointer; }
-
     .modal-body { padding: 24px; }
     .form-group { margin-bottom: 18px; }
     .form-label { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; display: block; }
-    .form-input, .form-select, .form-textarea {
-      width: 100%; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 10px; color: var(--text); font-family: 'Nunito', sans-serif; font-size: 14px; padding: 12px;
-    }
+    .form-input, .form-select, .form-textarea { width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; color: var(--text); font-family: 'Nunito', sans-serif; font-size: 14px; padding: 12px; }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--accent); }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-
-    .cover-upload-area { border: 2px dashed rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 24px; text-align: center; cursor: pointer; }
+    .cover-upload-area { border: 2px dashed rgba(255,255,255,0.15); border-radius: 12px; padding: 24px; text-align: center; cursor: pointer; transition: border-color 0.2s; }
+    .cover-upload-area:hover { border-color: var(--accent); }
     .preview-img { width: 100px; height: 140px; object-fit: cover; border-radius: 8px; margin: 0 auto 12px; display: block; }
+    .modal-footer { padding: 20px 24px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .btn-danger { background: rgba(255,77,77,0.1); color: var(--danger); border: 1px solid var(--danger); }
+    .btn-danger:hover { background: var(--danger); color: #fff; }
 
-    /* Modal Overview */
+    /* ===== OVERVIEW MODAL ===== */
     .overview-modal { width: 700px; padding: 0; overflow: hidden; }
     .overview-content { display: grid; grid-template-columns: 240px 1fr; height: 100%; }
-    
     .overview-left { background: #11111b; padding: 30px; display: flex; flex-direction: column; gap: 20px; border-right: 1px solid var(--border); }
     .overview-cover { width: 100%; aspect-ratio: 2/3; border-radius: 12px; object-fit: cover; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
     .overview-stats { display: flex; flex-direction: column; gap: 12px; }
     .stat-item { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 10px; border: 1px solid var(--border); }
     .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; margin-bottom: 4px; }
     .stat-value { font-size: 16px; font-weight: 700; color: var(--text); }
-
     .overview-right { padding: 30px; display: flex; flex-direction: column; gap: 24px; overflow-y: auto; }
     .overview-header { display: flex; justify-content: space-between; align-items: flex-start; }
     .overview-title-box h2 { font-family: 'Rajdhani', sans-serif; font-size: 28px; color: var(--text); line-height: 1.2; }
     .overview-title-box p { color: var(--muted); font-size: 14px; margin-top: 4px; }
-    
     .overview-section-title { font-family: 'Rajdhani', sans-serif; font-size: 14px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
-    
     .progress-edit-box { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; }
     .ep-input-large { width: 60px; background: var(--card); border: 1px solid var(--border); color: #fff; padding: 8px; border-radius: 6px; text-align: center; font-size: 18px; font-weight: 700; }
-    
     .comment-scroll { flex: 1; max-height: 200px; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 10px; }
     .comment-item-inner { position: relative; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
     .comment-item-inner:last-child { border-bottom: none; }
+    .no-comments { text-align: center; color: var(--muted); font-size: 12px; padding: 12px; }
 
-    .modal-footer { padding: 20px 24px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-    .btn-danger { background: rgba(255, 77, 77, 0.1); color: var(--danger); border: 1px solid var(--danger); }
-    .btn-danger:hover { background: var(--danger); color: #fff; }
-    
+    /* ===== SYNC MODAL ===== */
+    .sync-modal { width: 560px; }
+    .sync-steps { display: flex; flex-direction: column; gap: 14px; }
+    .sync-step { display: flex; gap: 14px; align-items: flex-start; background: rgba(255,255,255,0.03); border-radius: 12px; padding: 14px; border: 1px solid var(--border); }
+    .step-num { min-width: 28px; height: 28px; border-radius: 50%; background: var(--teal); color: #001b22; font-weight: 800; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+    .step-text { font-size: 13px; line-height: 1.6; color: var(--text); }
+    .step-text strong { color: var(--teal); }
+    .step-text code { background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 5px; color: var(--gold); font-size: 12px; }
+    .divider-label { font-family: 'Rajdhani', sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); text-align: center; position: relative; margin: 4px 0; }
+    .divider-label::before, .divider-label::after { content: ''; position: absolute; top: 50%; width: 40%; height: 1px; background: var(--border); }
+    .divider-label::before { left: 0; }
+    .divider-label::after { right: 0; }
+
+    /* URL Import */
+    .url-import-row { display: flex; gap: 8px; margin-top: 8px; }
+    .url-import-row .form-input { flex: 1; }
+
+    /* ===== TOAST ===== */
     .toast {
-      position: fixed; bottom: 24px; right: 24px; padding: 12px 24px; background: var(--panel);
-      color: #fff; border-radius: 10px; border-left: 4px solid var(--green);
+      position: fixed; bottom: 24px; right: 24px; padding: 12px 24px;
+      background: var(--panel); color: #fff; border-radius: 10px; border-left: 4px solid var(--green);
       box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 2000;
       transform: translateY(100px); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      max-width: 360px; font-size: 13px;
     }
     .toast.show { transform: translateY(0); }
+    .toast.warn { border-left-color: var(--gold); }
+    .toast.err { border-left-color: var(--danger); }
+
+    /* Unsaved banner */
+    .unsaved-banner {
+      display: none; background: rgba(244,162,97,0.1); border: 1px solid rgba(244,162,97,0.3);
+      border-radius: 12px; padding: 12px 18px; font-size: 13px; color: var(--gold);
+      align-items: center; gap: 12px; justify-content: space-between;
+    }
+    .unsaved-banner.visible { display: flex; }
 
     @media (max-width: 900px) {
       .middle-row { grid-template-columns: 1fr; }
@@ -315,6 +250,8 @@
       .overview-modal { width: 95vw; }
       .overview-content { grid-template-columns: 1fr; }
       .overview-left { display: none; }
+      .topbar { flex-wrap: wrap; height: auto; padding: 10px 16px; gap: 8px; }
+      .tab-bar { display: none; }
     }
   </style>
 </head>
@@ -333,30 +270,39 @@
       </nav>
     </div>
     <div class="topbar-right">
-      <button class="btn btn-save" onclick="exportData()">Exportar</button>
+      <div class="unsaved-dot" id="unsaved-dot" title="Há alterações não exportadas"></div>
+      <button class="btn btn-sync" onclick="openSyncModal()">⇄ Sincronizar</button>
+      <button class="btn btn-import" onclick="document.getElementById('file-import').click()">↑ Importar JSON</button>
+      <input type="file" id="file-import" hidden accept=".json" onchange="importJsonFile(event)">
+      <button class="btn btn-export" id="btn-export" onclick="exportData()">↓ Exportar JSON</button>
       <button class="btn btn-add" onclick="openAddModal()">+ Novo Anime</button>
     </div>
   </header>
 
   <main class="main-content">
+
+    <!-- Unsaved changes banner -->
+    <div class="unsaved-banner" id="unsaved-banner">
+      <span>⚠️ Há alterações não salvas. Exporte o JSON e faça commit para sincronizar com o Git.</span>
+      <button class="btn btn-export" onclick="exportData()" style="padding: 8px 14px; font-size: 13px;">↓ Exportar agora</button>
+    </div>
+
+    <!-- Info Banner -->
+    <div class="info-banner">
+      <span>
+        <strong style="color:var(--teal)">Fluxo Git:</strong>
+        edite os animes → <strong>Exportar JSON</strong> → substitua <code>animes.json</code> no repositório → commit.
+        Seu amigo dá <strong>git pull</strong> e abre o <code>index.html</code>.
+      </span>
+      <button class="btn btn-sync" onclick="openSyncModal()" style="padding:8px 14px; font-size:12px; white-space:nowrap;">Ver guia</button>
+    </div>
+
     <!-- KPIs -->
     <div class="kpi-row">
-      <div class="kpi-card total">
-        <div class="kpi-label">Total na Lista</div>
-        <div class="kpi-value" id="stat-total">0</div>
-      </div>
-      <div class="kpi-card watching">
-        <div class="kpi-label">Assistindo Agora</div>
-        <div class="kpi-value" id="stat-watching">0</div>
-      </div>
-      <div class="kpi-card planned">
-        <div class="kpi-label">Para Assistir</div>
-        <div class="kpi-value" id="stat-planned">0</div>
-      </div>
-      <div class="kpi-card completed">
-        <div class="kpi-label">Finalizados</div>
-        <div class="kpi-value" id="stat-completed">0</div>
-      </div>
+      <div class="kpi-card total"><div class="kpi-label">Total na Lista</div><div class="kpi-value" id="stat-total">0</div></div>
+      <div class="kpi-card watching"><div class="kpi-label">Assistindo Agora</div><div class="kpi-value" id="stat-watching">0</div></div>
+      <div class="kpi-card planned"><div class="kpi-label">Para Assistir</div><div class="kpi-value" id="stat-planned">0</div></div>
+      <div class="kpi-card completed"><div class="kpi-label">Finalizados</div><div class="kpi-value" id="stat-completed">0</div></div>
     </div>
 
     <div class="middle-row">
@@ -365,19 +311,16 @@
           <div class="section-title">Minha Biblioteca</div>
           <div class="anime-grid" id="anime-grid"></div>
         </section>
-
-        <section class="watching-progress-box" id="watching-progress-section">
-          <div class="section-title" style="margin-bottom:0">Progresso dos Animes em Andamento</div>
+        <section class="watching-progress-box" id="watching-progress-section" style="display:none">
+          <div class="section-title" style="margin-bottom:0">Progresso em Andamento</div>
           <div class="watching-grid" id="watching-progress-grid"></div>
         </section>
       </div>
-
       <aside class="right-panel">
         <div class="side-box">
           <div class="section-title">Top 5 Favoritos</div>
           <div class="top-list" id="top-ranking"></div>
         </div>
-
         <div class="side-box">
           <div class="section-title">Comentários Recentes</div>
           <div class="comment-list" id="comment-list"></div>
@@ -387,7 +330,7 @@
   </main>
 </div>
 
-<!-- Modal Adicionar/Editar -->
+<!-- ===== MODAL ADICIONAR/EDITAR ===== -->
 <div class="modal-overlay" id="anime-modal">
   <div class="modal">
     <div class="modal-header">
@@ -426,8 +369,8 @@
       <div class="form-group">
         <label class="form-label">Sua Avaliação (0.5 a 5.0)</label>
         <div class="stars-input-container">
-            <div class="stars-input" id="stars-input"></div>
-            <div class="rating-value-display" id="rating-val-display">0.0</div>
+          <div class="stars-input" id="stars-input"></div>
+          <div class="rating-value-display" id="rating-val-display">0.0</div>
         </div>
       </div>
       <div class="form-group">
@@ -436,7 +379,7 @@
           <img id="preview-img" class="preview-img" style="display:none">
           <div id="upload-text">
             <p style="font-size: 24px; margin-bottom: 8px;">📷</p>
-            <p class="form-label" style="margin-bottom:0">Clique para enviar</p>
+            <p class="form-label" style="margin-bottom:0">Clique para enviar imagem</p>
           </div>
           <input type="file" id="file-input" hidden accept="image/*" onchange="handleImageUpload(event)">
         </div>
@@ -453,7 +396,7 @@
   </div>
 </div>
 
-<!-- Modal Overview -->
+<!-- ===== MODAL OVERVIEW ===== -->
 <div class="modal-overlay" id="overview-modal">
   <div class="modal overview-modal">
     <div class="overview-content">
@@ -479,7 +422,6 @@
           </div>
           <button class="btn-close" onclick="closeModal('overview-modal')">&times;</button>
         </div>
-
         <div>
           <div class="overview-section-title">Progresso</div>
           <div class="progress-edit-box">
@@ -493,15 +435,13 @@
             </div>
           </div>
         </div>
-
         <div>
-          <div class="overview-section-title">Minha Avaliação (5 Estrelas)</div>
+          <div class="overview-section-title">Minha Avaliação</div>
           <div class="stars-input-container">
             <div class="stars-input" id="view-stars-input"></div>
             <div class="rating-value-display" id="view-rating-val-display">0.0</div>
           </div>
         </div>
-
         <div style="flex:1; display:flex; flex-direction:column;">
           <div class="overview-section-title">Comentários</div>
           <div class="comment-scroll" id="view-comments"></div>
@@ -510,9 +450,8 @@
             <button class="btn btn-add" onclick="addQuickComment()" style="padding: 0 15px;">Postar</button>
           </div>
         </div>
-
         <div style="display:flex; justify-content:flex-end; gap: 10px; margin-top: 10px;">
-          <button class="btn btn-save" onclick="openEditFromOverview()">Editar Tudo</button>
+          <button class="btn btn-sync" onclick="openEditFromOverview()">Editar Tudo</button>
           <button class="btn btn-add" onclick="closeModal('overview-modal')">Fechar</button>
         </div>
       </div>
@@ -520,70 +459,157 @@
   </div>
 </div>
 
-<div id="toast" class="toast">✓ Ação realizada com sucesso!</div>
+<!-- ===== MODAL SYNC / GUIA GIT ===== -->
+<div class="modal-overlay" id="sync-modal">
+  <div class="modal sync-modal">
+    <div class="modal-header">
+      <h2 class="modal-title">⇄ Sincronizar via Git</h2>
+      <button class="btn-close" onclick="closeModal('sync-modal')">&times;</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="divider-label">Carregar JSON de uma URL (GitHub Raw)</div>
+      <div class="form-group" style="margin-top: 14px; margin-bottom: 0;">
+        <label class="form-label">URL do arquivo animes.json (raw do GitHub)</label>
+        <div class="url-import-row">
+          <input type="text" id="url-import-input" class="form-input" placeholder="https://raw.githubusercontent.com/usuario/repo/main/animes.json">
+          <button class="btn btn-sync" onclick="importFromUrl()" style="white-space:nowrap">Carregar</button>
+        </div>
+        <p style="font-size: 11px; color: var(--muted); margin-top: 6px;">Cole a URL raw do GitHub. Isso substituirá os dados atuais.</p>
+      </div>
+
+      <div class="divider-label" style="margin: 22px 0 14px;">Fluxo de trabalho recomendado</div>
+
+      <div class="sync-steps">
+        <div class="sync-step">
+          <div class="step-num">1</div>
+          <div class="step-text">
+            <strong>Você (dono do repositório):</strong> edite os animes normalmente no site, depois clique em <strong>Exportar JSON</strong>. Um arquivo <code>animes.json</code> será baixado.
+          </div>
+        </div>
+        <div class="sync-step">
+          <div class="step-num">2</div>
+          <div class="step-text">
+            Substitua o <code>animes.json</code> antigo dentro da pasta do seu repositório local pelo novo que foi baixado.
+          </div>
+        </div>
+        <div class="sync-step">
+          <div class="step-num">3</div>
+          <div class="step-text">
+            No terminal, dentro da pasta do projeto: <code>git add animes.json</code> → <code>git commit -m "update animes"</code> → <code>git push</code>
+          </div>
+        </div>
+        <div class="sync-step">
+          <div class="step-num">4</div>
+          <div class="step-text">
+            <strong>Seu amigo:</strong> dentro da pasta do projeto dele: <code>git pull</code>. Ao abrir o <code>index.html</code> no navegador, os dados serão carregados automaticamente do <code>animes.json</code> atualizado.
+          </div>
+        </div>
+        <div class="sync-step">
+          <div class="step-num">5</div>
+          <div class="step-text">
+            <strong>Dica:</strong> Seu amigo também pode usar o campo de URL acima com o link raw do GitHub para carregar sem precisar clonar o repositório. O link fica no formato: <code>raw.githubusercontent.com/usuario/repo/main/animes.json</code>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" style="background:transparent; color:var(--muted)" onclick="closeModal('sync-modal')">Fechar</button>
+      <button class="btn btn-export" onclick="closeModal('sync-modal'); exportData()">↓ Exportar JSON agora</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
 
 <script>
-  // Estado Global
+  const DATA_FILE = './animes.json';
+  const DEFAULT_ANIMES = [
+    {id:1, name:'Attack on Titan', year:2013, total:75, watched:75, status:'completed', rating:5, cover:null, comments:[{id:1001, text:'Obra prima!', date:'05/04/2024'}]},
+    {id:2, name:'Demon Slayer', year:2019, total:44, watched:44, status:'completed', rating:4.5, cover:null, comments:[]},
+    {id:3, name:'Jujutsu Kaisen', year:2020, total:48, watched:32, status:'watching', rating:4.5, cover:null, comments:[]},
+    {id:4, name:'One Piece', year:1999, total:1100, watched:400, status:'watching', rating:4, cover:null, comments:[]}
+  ];
+
   let animes = [];
+  let savedSnapshot = '';   // JSON string of last saved/loaded state
   let currentFilter = 'all';
   let selectedRating = 0;
   let pendingCoverData = null;
   let editingAnimeId = null;
   let currentOverviewId = null;
 
-  // INICIALIZAÇÃO: Carrega dados do JSON e sincroniza com o LocalStorage
+  // ===== INIT =====
   window.onload = async () => {
-    await loadInitialData();
+    await loadAnimesFromJson();
     renderAll();
+    savedSnapshot = JSON.stringify(animes);
   };
 
-  async function loadInitialData() {
-    const localData = localStorage.getItem('anime_data_v8');
-    
-    if (localData) {
-      animes = JSON.parse(localData);
-      console.log("Dados carregados do LocalStorage");
-    } else {
-      try {
-        const response = await fetch('animes.json');
-        if (!response.ok) throw new Error('Não foi possível carregar o animes.json');
-        animes = await response.json();
-        saveToLocal();
-        console.log("Dados carregados do animes.json");
-      } catch (error) {
-        console.error("Erro ao carregar JSON:", error);
-        animes = []; // Fallback se tudo falhar
-      }
+  async function loadAnimesFromJson() {
+    try {
+      const response = await fetch(DATA_FILE, { cache: 'no-store' });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+      animes = normalizeAnimeList(data);
+      showToast('✓ Dados carregados do animes.json');
+    } catch (error) {
+      animes = normalizeAnimeList(DEFAULT_ANIMES);
+      showToast('animes.json não encontrado. Usando lista padrão.', 'warn');
     }
   }
 
+  function normalizeAnimeList(list) {
+    if (!Array.isArray(list)) return [];
+    return list.map((anime, index) => ({
+      id: anime.id ?? Date.now() + index,
+      name: anime.name ?? 'Sem nome',
+      year: Number(anime.year) || new Date().getFullYear(),
+      total: Number(anime.total) || 0,
+      watched: Number(anime.watched) || 0,
+      status: ['watching', 'planned', 'completed'].includes(anime.status) ? anime.status : 'planned',
+      rating: (anime.rating === null || anime.rating === undefined) ? null : Number(anime.rating),
+      cover: anime.cover || null,
+      comments: Array.isArray(anime.comments) ? anime.comments.map((c, ci) => ({
+        id: c.id ?? Date.now() + ci,
+        text: c.text ?? '',
+        date: c.date ?? new Date().toLocaleDateString('pt-BR')
+      })) : []
+    }));
+  }
+
+  // ===== UNSAVED STATE =====
+  function markDirty() {
+    document.getElementById('unsaved-dot').classList.add('visible');
+    document.getElementById('unsaved-banner').classList.add('visible');
+  }
+
+  function markClean() {
+    document.getElementById('unsaved-dot').classList.remove('visible');
+    document.getElementById('unsaved-banner').classList.remove('visible');
+    savedSnapshot = JSON.stringify(animes);
+  }
+
+  // ===== RENDER =====
   function renderAll() {
     renderGrid();
     renderStats();
     renderTopRanking();
     renderGlobalComments();
     renderWatchingProgress();
-    saveToLocal();
-  }
-
-  function saveToLocal() {
-    localStorage.setItem('anime_data_v8', JSON.stringify(animes));
   }
 
   function renderGrid() {
     const grid = document.getElementById('anime-grid');
     const filtered = animes.filter(a => currentFilter === 'all' || a.status === currentFilter);
-    
     if (filtered.length === 0) {
-      grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--muted)">Nenhum anime encontrado.</div>`;
+      grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted)">Nenhum anime encontrado.</div>`;
       return;
     }
-
     grid.innerHTML = filtered.map(a => {
       const pct = a.total > 0 ? Math.round((a.watched / a.total) * 100) : 0;
       const statusClasses = { watching: 'badge-watching', planned: 'badge-planned', completed: 'badge-completed' };
-      const fillClasses = { watching: 'var(--green)', planned: 'var(--gold)', completed: 'var(--purple)' };
-      
+      const fillColors = { watching: 'var(--green)', planned: 'var(--gold)', completed: 'var(--purple)' };
       return `
         <div class="anime-card" onclick="openOverview(${a.id})">
           <div class="anime-cover-container">
@@ -593,18 +619,10 @@
           </div>
           <div class="anime-info">
             <div class="anime-name" title="${a.name}">${a.name}</div>
-            <div class="anime-meta">
-              <span>${a.year}</span>
-              <span>${a.watched}/${a.total} eps</span>
-            </div>
-            <div class="progress-container">
-              <div class="progress-bar">
-                <div class="progress-fill" style="width: ${pct}%; background: ${fillClasses[a.status]}"></div>
-              </div>
-            </div>
+            <div class="anime-meta"><span>${a.year}</span><span>${a.watched}/${a.total} eps</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:${pct}%; background:${fillColors[a.status]}"></div></div>
           </div>
-        </div>
-      `;
+        </div>`;
     }).join('');
   }
 
@@ -612,61 +630,45 @@
     const watching = animes.filter(a => a.status === 'watching');
     const section = document.getElementById('watching-progress-section');
     const grid = document.getElementById('watching-progress-grid');
-    
-    if (watching.length === 0) {
-      section.style.display = 'none';
-      return;
-    }
-    
+    if (watching.length === 0) { section.style.display = 'none'; return; }
     section.style.display = 'block';
     grid.innerHTML = watching.map(a => {
-        const pct = a.total > 0 ? Math.round((a.watched / a.total) * 100) : 0;
-        return `
-            <div class="watching-item" onclick="openOverview(${a.id})">
-                <div class="watching-info">
-                    <span class="watching-name" title="${a.name}">${a.name}</span>
-                    <span class="watching-eps">${a.watched} / ${a.total} eps</span>
-                </div>
-                <div class="watching-bar-bg">
-                    <div class="watching-bar-fill" style="width: ${pct}%"></div>
-                </div>
-                <div style="text-align:right; font-size:10px; color:var(--muted); margin-top:4px;">${pct}% concluído</div>
-            </div>
-        `;
+      const pct = a.total > 0 ? Math.round((a.watched / a.total) * 100) : 0;
+      return `
+        <div class="watching-item" onclick="openOverview(${a.id})">
+          <div class="watching-info">
+            <span class="watching-name" title="${a.name}">${a.name}</span>
+            <span class="watching-eps">${a.watched} / ${a.total} eps</span>
+          </div>
+          <div class="watching-bar-bg"><div class="watching-bar-fill" style="width:${pct}%"></div></div>
+          <div style="text-align:right;font-size:10px;color:var(--muted);margin-top:4px">${pct}% concluído</div>
+        </div>`;
     }).join('');
   }
 
   function renderTopRanking() {
-    const top = animes
-      .filter(a => a.rating > 0)
-      .sort((a, b) => b.rating - a.rating)
-      .slice(0, 5);
-    
+    const top = animes.filter(a => a.rating > 0).sort((a, b) => b.rating - a.rating).slice(0, 5);
     const container = document.getElementById('top-ranking');
     if (top.length === 0) {
-      container.innerHTML = `<div style="font-size:12px; color:var(--muted); text-align:center; padding:10px;">Avalie animes para ver o Top 5.</div>`;
+      container.innerHTML = `<div style="font-size:12px;color:var(--muted);text-align:center;padding:10px">Avalie animes para ver o Top 5.</div>`;
       return;
     }
-
     container.innerHTML = top.map((a, i) => `
       <div class="top-item" onclick="openOverview(${a.id})">
         <div class="top-rank">#${i+1}</div>
-        ${a.cover ? `<img src="${a.cover}" class="top-img">` : `<div class="top-img" style="background:var(--card2); display:flex; align-items:center; justify-content:center; font-size:10px">📺</div>`}
+        ${a.cover ? `<img src="${a.cover}" class="top-img">` : `<div class="top-img" style="background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:10px">📺</div>`}
         <div class="top-name">${a.name}</div>
         <div class="top-score">★ ${a.rating.toFixed(1)}</div>
-      </div>
-    `).join('');
+      </div>`).join('');
   }
 
   function renderGlobalComments() {
     const list = document.getElementById('comment-list');
     let all = [];
-    animes.forEach(a => {
-      if (a.comments) a.comments.forEach(c => all.push({ animeId: a.id, animeName: a.name, ...c }));
-    });
+    animes.forEach(a => { if (a.comments) a.comments.forEach(c => all.push({ animeId: a.id, animeName: a.name, ...c })); });
     all.sort((a, b) => b.id - a.id);
     if (all.length === 0) {
-      list.innerHTML = `<div style="text-align:center; color:var(--muted); font-size:12px; padding:20px;">Sem comentários.</div>`;
+      list.innerHTML = `<div style="text-align:center;color:var(--muted);font-size:12px;padding:20px">Sem comentários.</div>`;
       return;
     }
     list.innerHTML = all.slice(0, 8).map(c => `
@@ -675,24 +677,7 @@
         <div class="comment-anime">${c.animeName}</div>
         <div class="comment-text">${c.text}</div>
         <div class="comment-date">${c.date}</div>
-      </div>
-    `).join('');
-  }
-
-  function deleteComment(animeId, commentId, event) {
-    if (event) event.stopPropagation();
-    if (!confirm("Excluir este comentário?")) return;
-    const anime = animes.find(a => a.id === animeId);
-    if (anime && anime.comments) {
-      anime.comments = anime.comments.filter(c => c.id !== commentId);
-      renderAll();
-      if (currentOverviewId === animeId) renderOverviewComments(anime);
-      showToast("Comentário excluído.");
-    }
-  }
-
-  function translateStatus(s) {
-    return { watching: 'Assistindo', planned: 'Planejado', completed: 'Concluído' }[s];
+      </div>`).join('');
   }
 
   function renderStats() {
@@ -702,17 +687,19 @@
     document.getElementById('stat-completed').textContent = animes.filter(a => a.status === 'completed').length;
   }
 
+  // ===== FILTER =====
   function filterStatus(s) {
     currentFilter = s;
-    document.querySelectorAll('.tab').forEach(t => {
-      t.classList.toggle('active', t.textContent.toLowerCase().includes(translateStatus(s)?.toLowerCase() || 'todos'));
-    });
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    const idx = { all: 0, watching: 1, planned: 2, completed: 3 };
+    document.querySelectorAll('.tab')[idx[s]]?.classList.add('active');
     renderGrid();
   }
 
+  // ===== ANIME CRUD =====
   function openAddModal() {
     editingAnimeId = null;
-    document.getElementById('modal-title').textContent = "Adicionar Anime";
+    document.getElementById('modal-title').textContent = 'Adicionar Anime';
     resetForm();
     openModal('anime-modal');
   }
@@ -724,6 +711,8 @@
     document.getElementById('inp-watched').value = 0;
     document.getElementById('inp-total').value = '';
     document.getElementById('inp-comment').value = '';
+    document.getElementById('quick-comment').value = '';
+    document.getElementById('file-input').value = '';
     selectedRating = 0;
     pendingCoverData = null;
     document.getElementById('preview-img').style.display = 'none';
@@ -731,82 +720,12 @@
     renderStarsInput('stars-input', 'rating-val-display');
   }
 
-  function renderStarsInput(containerId, displayId) {
-    const container = document.getElementById(containerId);
-    const display = document.getElementById(displayId);
-    display.textContent = selectedRating.toFixed(1);
-    
-    container.innerHTML = Array.from({length: 5}, (_, i) => {
-      const starNum = i + 1;
-      let className = 'star-btn';
-      if (selectedRating >= starNum) className += ' active';
-      else if (selectedRating === starNum - 0.5) className += ' half';
-      
-      return `<button class="${className}" 
-              onmousemove="handleStarHover(event, ${starNum}, '${containerId}', '${displayId}')"
-              onclick="handleStarClick(event, ${starNum})"
-              onmouseleave="resetStarDisplay('${containerId}', '${displayId}')">★</button>`;
-    }).join('');
-  }
-
-  function handleStarHover(e, starNum, containerId, displayId) {
-    const rect = e.target.getBoundingClientRect();
-    const isHalf = (e.clientX - rect.left) < (rect.width / 2);
-    const hoverVal = isHalf ? starNum - 0.5 : starNum;
-    updateStarsVisual(hoverVal, containerId);
-    document.getElementById(displayId).textContent = hoverVal.toFixed(1);
-  }
-
-  function handleStarClick(e, starNum) {
-    const rect = e.target.getBoundingClientRect();
-    const isHalf = (e.clientX - rect.left) < (rect.width / 2);
-    selectedRating = isHalf ? starNum - 0.5 : starNum;
-    
-    if (currentOverviewId) {
-        const anime = animes.find(a => a.id === currentOverviewId);
-        if (anime) {
-            anime.rating = selectedRating;
-            renderAll();
-            document.getElementById('view-rating').innerHTML = `★ ${selectedRating.toFixed(1)}`;
-        }
-    }
-  }
-
-  function resetStarDisplay(containerId, displayId) {
-    updateStarsVisual(selectedRating, containerId);
-    document.getElementById(displayId).textContent = selectedRating.toFixed(1);
-  }
-
-  function updateStarsVisual(val, containerId) {
-    const stars = document.getElementById(containerId).querySelectorAll('.star-btn');
-    stars.forEach((star, i) => {
-        const starNum = i + 1;
-        star.classList.remove('active', 'half');
-        if (val >= starNum) star.classList.add('active');
-        else if (val === starNum - 0.5) star.classList.add('half');
-    });
-  }
-
-  function handleImageUpload(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      pendingCoverData = ev.target.result;
-      document.getElementById('preview-img').src = pendingCoverData;
-      document.getElementById('preview-img').style.display = 'block';
-      document.getElementById('upload-text').style.display = 'none';
-    };
-    reader.readAsDataURL(file);
-  }
-
   function saveAnime() {
     const name = document.getElementById('inp-name').value.trim();
-    if (!name) return showToast("Dê um nome ao anime!", "var(--danger)");
-
+    if (!name) return showToast('Dê um nome ao anime!', 'warn');
     const data = {
       name,
-      year: parseInt(document.getElementById('inp-year').value) || 2024,
+      year: parseInt(document.getElementById('inp-year').value) || new Date().getFullYear(),
       status: document.getElementById('inp-status').value,
       watched: parseInt(document.getElementById('inp-watched').value) || 0,
       total: parseInt(document.getElementById('inp-total').value) || 12,
@@ -814,11 +733,8 @@
       cover: pendingCoverData,
       comments: []
     };
-
     const commentText = document.getElementById('inp-comment').value.trim();
-    if (commentText) {
-      data.comments.push({ id: Date.now(), text: commentText, date: new Date().toLocaleDateString('pt-BR') });
-    }
+    if (commentText) data.comments.push({ id: Date.now(), text: commentText, date: new Date().toLocaleDateString('pt-BR') });
 
     if (editingAnimeId) {
       const index = animes.findIndex(a => a.id === editingAnimeId);
@@ -828,32 +744,53 @@
       data.id = Date.now();
       animes.push(data);
     }
-
     closeModal('anime-modal');
     renderAll();
     if (currentOverviewId) openOverview(currentOverviewId);
+    markDirty();
+    showToast('✓ Anime salvo. Lembre de exportar o JSON!', 'warn');
   }
 
+  function deleteAnimeAction() {
+    if (!confirm('Excluir este anime permanentemente?')) return;
+    animes = animes.filter(a => a.id !== currentOverviewId);
+    closeModal('overview-modal');
+    renderAll();
+    markDirty();
+    showToast('Anime removido. Exporte o JSON para salvar.', 'warn');
+  }
+
+  function deleteComment(animeId, commentId, event) {
+    if (event) event.stopPropagation();
+    if (!confirm('Excluir este comentário?')) return;
+    const anime = animes.find(a => a.id === animeId);
+    if (anime && anime.comments) {
+      anime.comments = anime.comments.filter(c => c.id !== commentId);
+      renderAll();
+      if (currentOverviewId === animeId) renderOverviewComments(anime);
+      markDirty();
+      showToast('Comentário excluído. Exporte o JSON para salvar.', 'warn');
+    }
+  }
+
+  // ===== OVERVIEW =====
   function openOverview(id) {
     const anime = animes.find(a => a.id === id);
     if (!anime) return;
     currentOverviewId = id;
     selectedRating = anime.rating || 0;
-
     document.getElementById('view-name').textContent = anime.name;
     document.getElementById('view-year').textContent = anime.year;
     document.getElementById('view-cover').src = anime.cover || 'https://via.placeholder.com/240x360?text=Sem+Capa';
     document.getElementById('view-rating').innerHTML = anime.rating ? `★ ${anime.rating.toFixed(1)}` : 'Não avaliado';
     document.getElementById('view-status-text').textContent = `${translateStatus(anime.status)} • ${anime.watched}/${anime.total} episódios`;
-    
     document.getElementById('edit-watched').value = anime.watched;
     document.getElementById('edit-total').value = anime.total;
-    
+    document.getElementById('quick-comment').value = '';
     const pct = anime.total > 0 ? (anime.watched / anime.total) * 100 : 0;
     const fill = document.getElementById('view-progress-fill');
     fill.style.width = `${pct}%`;
     fill.style.background = anime.status === 'completed' ? 'var(--purple)' : (anime.status === 'planned' ? 'var(--gold)' : 'var(--green)');
-
     renderStarsInput('view-stars-input', 'view-rating-val-display');
     renderOverviewComments(anime);
     openModal('overview-modal');
@@ -868,10 +805,9 @@
     container.innerHTML = anime.comments.slice().reverse().map(c => `
       <div class="comment-item-inner">
         <button class="btn-del-comment" style="opacity:1" onclick="deleteComment(${anime.id}, ${c.id}, event)">×</button>
-        <div style="font-size: 13px; color: var(--text); padding-right:25px;">${c.text}</div>
-        <div style="font-size: 10px; color: var(--muted); margin-top: 4px;">${c.date}</div>
-      </div>
-    `).join('');
+        <div style="font-size:13px;color:var(--text);padding-right:25px">${c.text}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px">${c.date}</div>
+      </div>`).join('');
   }
 
   function addQuickComment() {
@@ -884,7 +820,8 @@
     document.getElementById('quick-comment').value = '';
     renderOverviewComments(anime);
     renderGlobalComments();
-    saveToLocal();
+    markDirty();
+    showToast('Comentário adicionado. Exporte o JSON para salvar.', 'warn');
   }
 
   function updateQuickProgress() {
@@ -896,17 +833,19 @@
     anime.total = total;
     if (watched >= total && total > 0) anime.status = 'completed';
     else if (watched > 0) anime.status = 'watching';
+    else anime.status = 'planned';
     document.getElementById('view-status-text').textContent = `${translateStatus(anime.status)} • ${anime.watched}/${anime.total} episódios`;
     const pct = total > 0 ? (watched / total) * 100 : 0;
     document.getElementById('view-progress-fill').style.width = `${pct}%`;
     renderAll();
+    markDirty();
   }
 
   function openEditFromOverview() {
     const anime = animes.find(a => a.id === currentOverviewId);
     if (!anime) return;
     editingAnimeId = anime.id;
-    document.getElementById('modal-title').textContent = "Editar Anime";
+    document.getElementById('modal-title').textContent = 'Editar Anime';
     document.getElementById('inp-name').value = anime.name;
     document.getElementById('inp-year').value = anime.year;
     document.getElementById('inp-status').value = anime.status;
@@ -928,46 +867,156 @@
     openModal('anime-modal');
   }
 
-  function deleteAnimeAction() {
-    if (!confirm("Excluir este anime permanentemente?")) return;
-    animes = animes.filter(a => a.id !== currentOverviewId);
-    closeModal('overview-modal');
-    renderAll();
-    showToast("Anime removido.");
+  // ===== STARS =====
+  function renderStarsInput(containerId, displayId) {
+    const container = document.getElementById(containerId);
+    const display = document.getElementById(displayId);
+    display.textContent = selectedRating.toFixed(1);
+    container.innerHTML = Array.from({ length: 5 }, (_, i) => {
+      const starNum = i + 1;
+      let cls = 'star-btn';
+      if (selectedRating >= starNum) cls += ' active';
+      else if (selectedRating === starNum - 0.5) cls += ' half';
+      return `<button class="${cls}"
+        onmousemove="handleStarHover(event, ${starNum}, '${containerId}', '${displayId}')"
+        onclick="handleStarClick(event, ${starNum})"
+        onmouseleave="resetStarDisplay('${containerId}', '${displayId}')">★</button>`;
+    }).join('');
   }
 
-  function openModal(id) {
-    document.getElementById(id).classList.add('open');
-    document.body.style.overflow = 'hidden';
+  function handleStarHover(e, starNum, containerId, displayId) {
+    const rect = e.target.getBoundingClientRect();
+    const hoverVal = (e.clientX - rect.left) < (rect.width / 2) ? starNum - 0.5 : starNum;
+    updateStarsVisual(hoverVal, containerId);
+    document.getElementById(displayId).textContent = hoverVal.toFixed(1);
   }
 
+  function handleStarClick(e, starNum) {
+    const rect = e.target.getBoundingClientRect();
+    selectedRating = (e.clientX - rect.left) < (rect.width / 2) ? starNum - 0.5 : starNum;
+    if (currentOverviewId) {
+      const anime = animes.find(a => a.id === currentOverviewId);
+      if (anime) {
+        anime.rating = selectedRating;
+        renderAll();
+        document.getElementById('view-rating').innerHTML = `★ ${selectedRating.toFixed(1)}`;
+        markDirty();
+        showToast('Nota atualizada. Exporte o JSON para salvar.', 'warn');
+      }
+    }
+  }
+
+  function resetStarDisplay(containerId, displayId) {
+    updateStarsVisual(selectedRating, containerId);
+    document.getElementById(displayId).textContent = selectedRating.toFixed(1);
+  }
+
+  function updateStarsVisual(val, containerId) {
+    const stars = document.getElementById(containerId).querySelectorAll('.star-btn');
+    stars.forEach((star, i) => {
+      const starNum = i + 1;
+      star.classList.remove('active', 'half');
+      if (val >= starNum) star.classList.add('active');
+      else if (val === starNum - 0.5) star.classList.add('half');
+    });
+  }
+
+  // ===== IMAGE =====
+  function handleImageUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      pendingCoverData = ev.target.result;
+      document.getElementById('preview-img').src = pendingCoverData;
+      document.getElementById('preview-img').style.display = 'block';
+      document.getElementById('upload-text').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // ===== EXPORT =====
+  function exportData() {
+    const sorted = [...animes].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+    const json = JSON.stringify(sorted, null, 2);
+    const blob = new Blob([json], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'animes.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    markClean();
+    showToast('✓ animes.json exportado! Substitua no repositório e faça commit.');
+  }
+
+  // ===== IMPORT JSON FILE =====
+  function importJsonFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+        animes = normalizeAnimeList(data);
+        renderAll();
+        markClean();
+        showToast(`✓ ${animes.length} animes importados com sucesso!`);
+      } catch {
+        showToast('Erro ao ler o JSON. Verifique o arquivo.', 'err');
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+  }
+
+  // ===== IMPORT FROM URL =====
+  async function importFromUrl() {
+    const url = document.getElementById('url-import-input').value.trim();
+    if (!url) return showToast('Cole uma URL válida.', 'warn');
+    showToast('Carregando dados da URL...');
+    try {
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      animes = normalizeAnimeList(data);
+      renderAll();
+      markClean();
+      closeModal('sync-modal');
+      showToast(`✓ ${animes.length} animes carregados da URL com sucesso!`);
+    } catch (err) {
+      showToast('Erro ao carregar URL. Verifique se é uma URL raw pública do GitHub.', 'err');
+    }
+  }
+
+  // ===== MODALS =====
+  function openModal(id) { document.getElementById(id).classList.add('open'); document.body.style.overflow = 'hidden'; }
   function closeModal(id) {
     document.getElementById(id).classList.remove('open');
     document.body.style.overflow = 'auto';
     if (id === 'overview-modal') currentOverviewId = null;
   }
-
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 3000);
-  }
-
-  function exportData() {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(animes));
-    const downloadAnchorNode = document.createElement('a');
-    downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", "anime_tracker_v8.json");
-    document.body.appendChild(downloadAnchorNode);
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
-  }
+  function openSyncModal() { openModal('sync-modal'); }
 
   window.onclick = function(event) {
     if (event.target.classList.contains('modal-overlay')) closeModal(event.target.id);
+  };
+
+  // ===== TOAST =====
+  function showToast(msg, type = '') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast' + (type ? ' ' + type : '');
+    t.classList.add('show');
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  function translateStatus(s) {
+    return { watching: 'Assistindo', planned: 'Planejado', completed: 'Concluído' }[s] || 'Planejado';
   }
 </script>
-
 </body>
 </html>
