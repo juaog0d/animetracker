@@ -56,6 +56,19 @@ class Handler(http.server.BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.end_headers()
 
+    def send_file(self, filepath, content_type):
+        try:
+            data = filepath.read_bytes()
+            self.send_response(200)
+            self.send_header("Content-Type", content_type)
+            self.send_header("Content-Length", str(len(data)))
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self.wfile.write(data)
+        except FileNotFoundError:
+            self.send_json(404, {"erro": "arquivo nao encontrado"})
+
     def do_GET(self):
         if self.path == "/ping":
             self.send_json(200, {"ok": True})
@@ -63,8 +76,15 @@ class Handler(http.server.BaseHTTPRequestHandler):
         elif self.path == "/config":
             self.send_json(200, load_config())
 
+        elif self.path in ("/", "/index.html"):
+            self.send_file(BASE_DIR / "index.html", "text/html; charset=utf-8")
+
+        elif self.path == "/animes.json":
+            self.send_file(BASE_DIR / "animes.json", "application/json; charset=utf-8")
+
         else:
-            self.send_json(404, {"erro": "rota não encontrada"})
+            self.send_json(404, {"erro": "rota nao encontrada"})
+
 
     def do_POST(self):
         length = int(self.headers.get("Content-Length", 0))
@@ -137,6 +157,6 @@ def iniciar_servidor():
 if __name__ == "__main__":
     t = threading.Thread(target=iniciar_servidor, daemon=True)
     t.start()
-    webbrowser.open(f"file:///{BASE_DIR / 'index.html'}")
+    webbrowser.open(f"http://127.0.0.1:{PORT}/")
     # mantém o processo vivo
     t.join()
